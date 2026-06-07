@@ -1,0 +1,72 @@
+{
+  "window": [
+    "2026-02-02",
+    "2026-05-28"
+  ],
+  "n_threads_total": 137655,
+  "heuristic_quality": {
+    "n_threads": 137655,
+    "dv": "quality_heuristic",
+    "n_contributors_range": [
+      1,
+      1038
+    ],
+    "ols_cluster": {
+      "slope_n_contributors": -0.0005390635429440968,
+      "se": 2.8620169521428386e-05,
+      "p": 3.8944542266189845e-79,
+      "ci95": [
+        -0.0005951580444375274,
+        -0.0004829690414506662
+      ],
+      "n_clusters": 1222
+    },
+    "fractional_binomial_glm": {
+      "logit_coef_n_contributors": -0.002715550309732667,
+      "se": 0.0001823619673897366,
+      "p": 3.7714104561351774e-50
+    },
+    "spearman": {
+      "rho": 0.1056967331491611,
+      "p": 0.0
+    },
+    "cuzick_trend": {
+      "z": 17.429584082796506,
+      "p": 4.9202544175853104e-68
+    },
+    "reading": "quality decreases with contributors (slope p=3.89e-79); significant over 137655 threads"
+  },
+  "judge_quality": {
+    "n_threads": 2497,
+    "dv": "quality_judge",
+    "n_contributors_range": [
+      1,
+      191
+    ],
+    "ols_cluster": {
+      "slope_n_contributors": 0.0021206541781589095,
+      "se": 0.0004558089328234507,
+      "p": 3.279238558356676e-06,
+      "ci95": [
+        0.0012272850859933093,
+        0.0030140232703245095
+      ],
+      "n_clusters": 134
+    },
+    "fractional_binomial_glm": {
+      "logit_coef_n_contributors": 0.009217821646047297,
+      "se": 0.0020871084959776464,
+      "p": 1.0028812909456262e-05
+    },
+    "spearman": {
+      "rho": 0.08242095807596392,
+      "p": 3.731107110936262e-05
+    },
+    "cuzick_trend": {
+      "z": 3.870150655863246,
+      "p": 0.00010876811647510412
+    },
+    "reading": "quality increases with contributors (slope p=3.28e-06); significant over 2497 threads",
+    "n_judged": 2497
+  }
+}

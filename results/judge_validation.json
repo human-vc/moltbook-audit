@@ -1,0 +1,34 @@
+{
+  "n_compared": 303,
+  "correctness": {
+    "weighted_kappa": 0.6749733267971971,
+    "spearman_rho": 0.7423967606751807,
+    "spearman_p": 2.699640177166084e-54
+  },
+  "completeness": {
+    "weighted_kappa": 0.6134633203077791,
+    "spearman_rho": 0.6850609180029967,
+    "spearman_p": 2.5924264085177347e-43
+  },
+  "justification": {
+    "weighted_kappa": 0.5552186546826213,
+    "spearman_rho": 0.7142487411829656,
+    "spearman_p": 1.4501426349913414e-48
+  },
+  "actionability": {
+    "weighted_kappa": 0.5903763017544903,
+    "spearman_rho": 0.6546962330723771,
+    "spearman_p": 1.822908935925188e-38
+  },
+  "clarity": {
+    "weighted_kappa": 0.4248022211443576,
+    "spearman_rho": 0.6082135065203774,
+    "spearman_p": 4.836188684093864e-32
+  },
+  "overall": {
+    "weighted_kappa": 0.6899209615258998,
+    "spearman_rho": 0.7217743520462049,
+    "spearman_p": 4.997843435875943e-50
+  },
+  "krippendorff_note": "skipped: No module named 'krippendorff'"
+}

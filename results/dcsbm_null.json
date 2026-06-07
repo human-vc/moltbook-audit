@@ -1,0 +1,38 @@
+{
+  "window": [
+    "2026-01-28",
+    "2026-02-20"
+  ],
+  "topology_null": {
+    "modularity_observed": 0.3369902613917366,
+    "n_blocks_inferred": 34,
+    "dl_deg_corr": 643172.9405429284,
+    "dl_non_deg_corr": 653344.2162323551,
+    "deg_corr_preferred": true,
+    "weighted_null": false,
+    "note": "DC-SBM null already contains block structure, so this is a harder, more conservative test than the configuration-model null.",
+    "dcsbm_null": {
+      "null_mean": 0.36723734638821237,
+      "null_std": 0.0018963211726205963,
+      "z": -15.950401985269302,
+      "emp_p": 1.0,
+      "n": 50
+    }
+  },
+  "weighted_null": {
+    "modularity_observed": 0.33821494690543485,
+    "n_blocks_inferred": 17,
+    "dl_deg_corr": 869373.5186498701,
+    "dl_non_deg_corr": 654506.3474230933,
+    "deg_corr_preferred": false,
+    "weighted_null": true,
+    "note": "DC-SBM null already contains block structure, so this is a harder, more conservative test than the configuration-model null.",
+    "dcsbm_null": {
+      "null_mean": 0.35874083064157847,
+      "null_std": 0.003249074303041459,
+      "z": -6.317455934119245,
+      "emp_p": 1.0,
+      "n": 50
+    }
+  }
+}

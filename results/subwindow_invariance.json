@@ -1,0 +1,69 @@
+{
+  "framing": "robustness / window-invariance, not a temporal-dynamics model",
+  "windows": [
+    {
+      "n_nodes": 78,
+      "n_edges": 82,
+      "reciprocity_obs": 0.0,
+      "reciprocity_null_mean": 0.0,
+      "reciprocity_ratio": null,
+      "reciprocity_emp_p": 1.0,
+      "modularity": 0.15805029086132488,
+      "modularity_z": -6.053394964357002,
+      "n_cascades": 382,
+      "cascade_verdict": "heavy-tailed; power-law NOT distinguishable from lognormal (do not claim power-law)",
+      "human_steered_comment_share": 0.838,
+      "window": "week1",
+      "start": "2026-01-28",
+      "end": "2026-02-04"
+    },
+    {
+      "n_nodes": 14371,
+      "n_edges": 91117,
+      "reciprocity_obs": 0.07157830042692362,
+      "reciprocity_null_mean": 0.013066079633050343,
+      "reciprocity_ratio": 5.48,
+      "reciprocity_emp_p": 0.0,
+      "modularity": 0.24974590278432135,
+      "modularity_z": 42.28967859233076,
+      "n_cascades": 6523,
+      "cascade_verdict": "heavy-tailed; power-law NOT distinguishable from lognormal (do not claim power-law)",
+      "human_steered_comment_share": 0.959,
+      "window": "week2",
+      "start": "2026-02-05",
+      "end": "2026-02-12"
+    },
+    {
+      "n_nodes": 6676,
+      "n_edges": 40817,
+      "reciprocity_obs": 0.08422961021143151,
+      "reciprocity_null_mean": 0.005817084149136637,
+      "reciprocity_ratio": 14.48,
+      "reciprocity_emp_p": 0.0,
+      "modularity": 0.2427992125251825,
+      "modularity_z": 21.618304188793278,
+      "n_cascades": 1019,
+      "cascade_verdict": "heavy-tailed; power-law NOT distinguishable from lognormal (do not claim power-law)",
+      "human_steered_comment_share": 0.889,
+      "window": "week3",
+      "start": "2026-02-13",
+      "end": "2026-02-20"
+    },
+    {
+      "n_nodes": 19105,
+      "n_edges": 132407,
+      "reciprocity_obs": 0.07602317098038623,
+      "reciprocity_null_mean": 0.008723289722430303,
+      "reciprocity_ratio": 8.71,
+      "reciprocity_emp_p": 0.0,
+      "modularity": 0.3369902613917366,
+      "modularity_z": 93.90280439074301,
+      "n_cascades": 7930,
+      "cascade_verdict": "heavy-tailed; power-law NOT distinguishable from lognormal (do not claim power-law)",
+      "human_steered_comment_share": 0.979,
+      "window": "full",
+      "start": "2026-01-28",
+      "end": "2026-02-20"
+    }
+  ]
+}

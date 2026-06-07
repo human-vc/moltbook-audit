@@ -1,0 +1,41 @@
+{
+  "n_overlap": 62,
+  "coder2_file": "moltbook_coding_shewwet_coder2_scored.csv",
+  "correctness": {
+    "weighted_kappa": 0.928,
+    "spearman": 0.941,
+    "exact_agree": 0.839,
+    "within1": 1.0
+  },
+  "completeness": {
+    "weighted_kappa": 0.957,
+    "spearman": 0.966,
+    "exact_agree": 0.935,
+    "within1": 1.0
+  },
+  "justification": {
+    "weighted_kappa": 0.921,
+    "spearman": 0.937,
+    "exact_agree": 0.871,
+    "within1": 1.0
+  },
+  "actionability": {
+    "weighted_kappa": 0.915,
+    "spearman": 0.913,
+    "exact_agree": 0.871,
+    "within1": 1.0
+  },
+  "clarity": {
+    "weighted_kappa": 0.659,
+    "spearman": 0.703,
+    "exact_agree": 0.613,
+    "within1": 1.0
+  },
+  "overall": {
+    "weighted_kappa": 0.832,
+    "spearman": 0.882,
+    "exact_agree": 0.677,
+    "within1": 1.0
+  },
+  "mean_weighted_kappa": 0.869
+}

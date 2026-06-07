@@ -1,0 +1,39 @@
+{
+  "window": [
+    "2026-02-02",
+    "2026-05-28"
+  ],
+  "n_threads_total": 137655,
+  "heuristic_quality": {
+    "n_threads": 137655,
+    "dv": "quality_heuristic",
+    "n_contributors_range": [
+      1,
+      1038
+    ],
+    "ols_cluster": {
+      "slope_n_contributors": -0.0005390635429447028,
+      "se": 2.8620169521347034e-05,
+      "p": 3.8944542211235067e-79,
+      "ci95": [
+        -0.0005951580444379738,
+        -0.0004829690414514316
+      ],
+      "n_clusters": 1222
+    },
+    "fractional_binomial_glm": {
+      "logit_coef_n_contributors": -0.0027155503097326325,
+      "se": 0.00018236196738972467,
+      "p": 3.771410456091086e-50
+    },
+    "spearman": {
+      "rho": 0.1056967331491611,
+      "p": 0.0
+    },
+    "cuzick_trend": {
+      "z": 17.429584082796506,
+      "p": 4.9202544175853104e-68
+    },
+    "reading": "quality decreases with contributors (slope p=3.89e-79); significant over 137655 threads"
+  }
+}

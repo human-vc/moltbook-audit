@@ -1,0 +1,56 @@
+{
+  "window": [
+    "2026-01-28",
+    "2026-02-20"
+  ],
+  "sesoi_d": 0.5,
+  "collab_meta": {
+    "n_collab": 3185,
+    "n_single": 7,
+    "n_matched_single": 5
+  },
+  "collaboration": {
+    "biased": {
+      "n_collab": 3185,
+      "n_single": 5,
+      "cohens_d": -0.455,
+      "sesoi_d": 0.5,
+      "sesoi_raw": 0.1215,
+      "tost_p": 0.4554,
+      "equivalence_declared": false,
+      "bf10": 0.656,
+      "bf01": 1.525,
+      "detectable_d_at_80pct_power": 1.254,
+      "achieved_power_at_observed_d": 0.174,
+      "verdict": "inconclusive/underpowered: can detect only d>=1.25"
+    },
+    "neutral": {
+      "n_collab": 3185,
+      "n_single": 5,
+      "cohens_d": -0.206,
+      "sesoi_d": 0.5,
+      "sesoi_raw": 0.1089,
+      "tost_p": 0.2231,
+      "equivalence_declared": false,
+      "bf10": 0.448,
+      "bf01": 2.232,
+      "detectable_d_at_80pct_power": 1.254,
+      "achieved_power_at_observed_d": 0.075,
+      "verdict": "inconclusive/underpowered: can detect only d>=1.25"
+    }
+  },
+  "diffusion_hr": {
+    "hazard_ratio": 1.0,
+    "hr_ci95": [
+      1.0,
+      1.0
+    ],
+    "rope": [
+      0.9,
+      1.1111
+    ],
+    "n_cascades": 800,
+    "n_adoptions": 116169,
+    "verdict": "no reinforcement: equivalent to HR=1 (CI within ROPE)"
+  }
+}

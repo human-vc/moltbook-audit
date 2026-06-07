@@ -1,0 +1,131 @@
+{
+  "shutdown_window_utc": [
+    "2026-01-31T17:35:00",
+    "2026-02-03T13:25:00"
+  ],
+  "label_rule": "autonomous = first post-restart later than 6.0h (Li-style; early returners are human-steered)",
+  "pred_rule": "autonomous = full-window CoV <= 0.75",
+  "leakage_note": "full-window CoV mildly overlaps the post-restart label period; pre-breach CoV is leakage-free but noisy (~8 events/agent)",
+  "n_eligible": 59203,
+  "n_labeled_autonomous": 56915,
+  "n_labeled_human": 2288,
+  "frac_labeled_autonomous": 0.961,
+  "confusion": {
+    "tp": 16088,
+    "fp": 242,
+    "fn": 40827,
+    "tn": 2046,
+    "precision": 0.985,
+    "recall": 0.283,
+    "f1": 0.439,
+    "accuracy": 0.306,
+    "balanced_accuracy": 0.588,
+    "mcc": 0.076
+  },
+  "roc_auc_cov_vs_shutdown_label": 0.611,
+  "note": "the 0.75 CoV cutoff is THIS paper's, not Li's (Li uses 0.5/1.0); shutdown-return labels are a behavioral proxy with a fuzzy boundary",
+  "f1_ci95": [
+    0.435,
+    0.444
+  ],
+  "return_window_sensitivity": {
+    "return_hours=3.0": {
+      "n_labeled_autonomous": 57703,
+      "confusion": {
+        "tp": 16165,
+        "fp": 165,
+        "fn": 41538,
+        "tn": 1335,
+        "precision": 0.99,
+        "recall": 0.28,
+        "f1": 0.437,
+        "accuracy": 0.296,
+        "balanced_accuracy": 0.585,
+        "mcc": 0.06
+      },
+      "roc_auc": 0.622
+    },
+    "return_hours=6.0": {
+      "n_labeled_autonomous": 56915,
+      "confusion": {
+        "tp": 16088,
+        "fp": 242,
+        "fn": 40827,
+        "tn": 2046,
+        "precision": 0.985,
+        "recall": 0.283,
+        "f1": 0.439,
+        "accuracy": 0.306,
+        "balanced_accuracy": 0.588,
+        "mcc": 0.076
+      },
+      "roc_auc": 0.611
+    },
+    "return_hours=12.0": {
+      "n_labeled_autonomous": 56165,
+      "confusion": {
+        "tp": 16005,
+        "fp": 325,
+        "fn": 40160,
+        "tn": 2713,
+        "precision": 0.98,
+        "recall": 0.285,
+        "f1": 0.442,
+        "accuracy": 0.316,
+        "balanced_accuracy": 0.589,
+        "mcc": 0.088
+      },
+      "roc_auc": 0.602
+    }
+  },
+  "cov_threshold_sensitivity": {
+    "cov<=0.3": {
+      "tp": 6514,
+      "fp": 11,
+      "fn": 50401,
+      "tn": 2277,
+      "precision": 0.998,
+      "recall": 0.114,
+      "f1": 0.205,
+      "accuracy": 0.148,
+      "balanced_accuracy": 0.555,
+      "mcc": 0.067
+    },
+    "cov<=0.5": {
+      "tp": 9274,
+      "fp": 73,
+      "fn": 47641,
+      "tn": 2215,
+      "precision": 0.992,
+      "recall": 0.163,
+      "f1": 0.28,
+      "accuracy": 0.194,
+      "balanced_accuracy": 0.566,
+      "mcc": 0.069
+    },
+    "cov<=0.75": {
+      "tp": 16088,
+      "fp": 242,
+      "fn": 40827,
+      "tn": 2046,
+      "precision": 0.985,
+      "recall": 0.283,
+      "f1": 0.439,
+      "accuracy": 0.306,
+      "balanced_accuracy": 0.588,
+      "mcc": 0.076
+    },
+    "cov<=1.0": {
+      "tp": 20630,
+      "fp": 510,
+      "fn": 36285,
+      "tn": 1778,
+      "precision": 0.976,
+      "recall": 0.362,
+      "f1": 0.529,
+      "accuracy": 0.378,
+      "balanced_accuracy": 0.57,
+      "mcc": 0.056
+    }
+  }
+}

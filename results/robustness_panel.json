@@ -1,0 +1,105 @@
+{
+  "window": [
+    "2026-01-28",
+    "2026-02-20"
+  ],
+  "alpha": 0.05,
+  "collab_meta": {
+    "n_collab": 3185,
+    "n_single": 7,
+    "n_matched_single": 5
+  },
+  "panel": {
+    "biased": {
+      "n_collab": 3185,
+      "n_single_matched": 5,
+      "permutation_mean_diff": {
+        "statistic": -0.11054945054945042,
+        "pvalue": 0.35482,
+        "mode": "monte_carlo",
+        "n_resamples_used": 99999,
+        "distinct_permutations": 2744164260838638.0,
+        "significant": false
+      },
+      "rank_test": {
+        "U1": 5855.0,
+        "pvalue": 0.3159745308720072,
+        "method": "exact",
+        "ties_present": true,
+        "rank_biserial": -0.26467817896389323,
+        "significant": false,
+        "note": "exact method is not tie-corrected; report ties_present"
+      },
+      "effect_size": {
+        "collab_mean": 0.5694505494505495,
+        "single_mean": 0.6799999999999999,
+        "mean_diff": -0.11054945054945042,
+        "cohens_d": -0.4550117604036583,
+        "mean_diff_ci95": [
+          -0.3114551080263878,
+          0.026073370880527896
+        ],
+        "mean_diff_se": 0.0811155035639935
+      },
+      "power": {
+        "n_collab": 3185,
+        "n_single_matched": 5,
+        "required_n": {
+          "n_per_group_at_d0.3": 175.38467227482235,
+          "n_per_group_at_d0.5": 63.765611775409695
+        },
+        "min_detectable_d_at_80pct_power": 1.2542664129172,
+        "achieved_power_at_observed_d": 0.1741379656913387
+      },
+      "underpowered": true,
+      "headline_eligible": false,
+      "framing": "Supporting robustness panel beside the continuous model. Inference is exact (permutation p=0.3548 via monte_carlo; rank-biserial r=-0.265, exact MWU p=0.3160). At n=(3185,5) the design can resolve only d>=1.25 at 80% power, so a non-rejection is inconclusive rather than evidence of equivalence."
+    },
+    "neutral": {
+      "n_collab": 3185,
+      "n_single_matched": 5,
+      "permutation_mean_diff": {
+        "statistic": -0.044957613814756714,
+        "pvalue": 0.63928,
+        "mode": "monte_carlo",
+        "n_resamples_used": 99999,
+        "distinct_permutations": 2744164260838638.0,
+        "significant": false
+      },
+      "rank_test": {
+        "U1": 6514.5,
+        "pvalue": 0.4933133530478861,
+        "method": "exact",
+        "ties_present": true,
+        "rank_biserial": -0.18185243328100476,
+        "significant": false,
+        "note": "exact method is not tie-corrected; report ties_present"
+      },
+      "effect_size": {
+        "collab_mean": 0.4730423861852433,
+        "single_mean": 0.518,
+        "mean_diff": -0.044957613814756714,
+        "cohens_d": -0.2063886749517062,
+        "mean_diff_ci95": [
+          -0.17675837961824314,
+          0.076707846899295
+        ],
+        "mean_diff_se": 0.0673380215644267
+      },
+      "power": {
+        "n_collab": 3185,
+        "n_single_matched": 5,
+        "required_n": {
+          "n_per_group_at_d0.3": 175.38467227482235,
+          "n_per_group_at_d0.5": 63.765611775409695
+        },
+        "min_detectable_d_at_80pct_power": 1.2542664129172,
+        "achieved_power_at_observed_d": 0.07468101848742778
+      },
+      "underpowered": true,
+      "headline_eligible": false,
+      "framing": "Supporting robustness panel beside the continuous model. Inference is exact (permutation p=0.6393 via monte_carlo; rank-biserial r=-0.182, exact MWU p=0.4933). At n=(3185,5) the design can resolve only d>=1.25 at 80% power, so a non-rejection is inconclusive rather than evidence of equivalence."
+    }
+  },
+  "note": "'biased'=paper's single-agent-favoring metric; 'neutral'=collaboration-neutral"
+}

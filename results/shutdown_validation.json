@@ -1,0 +1,130 @@
+{
+  "shutdown_window_utc": [
+    "2026-01-31T17:35:00",
+    "2026-02-03T13:25:00"
+  ],
+  "label_rule": "autonomous = first post-restart later than 6.0h (Li-style; early returners are human-steered)",
+  "pred_rule": "autonomous = pre-breach CoV <= 0.75",
+  "n_eligible": 580,
+  "n_labeled_autonomous": 305,
+  "n_labeled_human": 275,
+  "frac_labeled_autonomous": 0.526,
+  "confusion": {
+    "tp": 123,
+    "fp": 134,
+    "fn": 182,
+    "tn": 141,
+    "precision": 0.479,
+    "recall": 0.403,
+    "f1": 0.438,
+    "accuracy": 0.455,
+    "balanced_accuracy": 0.458,
+    "mcc": -0.084
+  },
+  "roc_auc_cov_vs_shutdown_label": 0.453,
+  "note": "the 0.75 CoV cutoff is THIS paper's, not Li's (Li uses 0.5/1.0); shutdown-return labels are a behavioral proxy with a fuzzy boundary",
+  "f1_ci95": [
+    0.386,
+    0.485
+  ],
+  "return_window_sensitivity": {
+    "return_hours=3.0": {
+      "n_labeled_autonomous": 379,
+      "confusion": {
+        "tp": 155,
+        "fp": 102,
+        "fn": 224,
+        "tn": 99,
+        "precision": 0.603,
+        "recall": 0.409,
+        "f1": 0.487,
+        "accuracy": 0.438,
+        "balanced_accuracy": 0.451,
+        "mcc": -0.094
+      },
+      "roc_auc": 0.449
+    },
+    "return_hours=6.0": {
+      "n_labeled_autonomous": 305,
+      "confusion": {
+        "tp": 123,
+        "fp": 134,
+        "fn": 182,
+        "tn": 141,
+        "precision": 0.479,
+        "recall": 0.403,
+        "f1": 0.438,
+        "accuracy": 0.455,
+        "balanced_accuracy": 0.458,
+        "mcc": -0.084
+      },
+      "roc_auc": 0.453
+    },
+    "return_hours=12.0": {
+      "n_labeled_autonomous": 238,
+      "confusion": {
+        "tp": 101,
+        "fp": 156,
+        "fn": 137,
+        "tn": 186,
+        "precision": 0.393,
+        "recall": 0.424,
+        "f1": 0.408,
+        "accuracy": 0.495,
+        "balanced_accuracy": 0.484,
+        "mcc": -0.031
+      },
+      "roc_auc": 0.473
+    }
+  },
+  "cov_threshold_sensitivity": {
+    "cov<=0.3": {
+      "tp": 24,
+      "fp": 36,
+      "fn": 281,
+      "tn": 239,
+      "precision": 0.4,
+      "recall": 0.079,
+      "f1": 0.132,
+      "accuracy": 0.453,
+      "balanced_accuracy": 0.474,
+      "mcc": -0.086
+    },
+    "cov<=0.5": {
+      "tp": 68,
+      "fp": 82,
+      "fn": 237,
+      "tn": 193,
+      "precision": 0.453,
+      "recall": 0.223,
+      "f1": 0.299,
+      "accuracy": 0.45,
+      "balanced_accuracy": 0.462,
+      "mcc": -0.086
+    },
+    "cov<=0.75": {
+      "tp": 123,
+      "fp": 134,
+      "fn": 182,
+      "tn": 141,
+      "precision": 0.479,
+      "recall": 0.403,
+      "f1": 0.438,
+      "accuracy": 0.455,
+      "balanced_accuracy": 0.458,
+      "mcc": -0.084
+    },
+    "cov<=1.0": {
+      "tp": 185,
+      "fp": 177,
+      "fn": 120,
+      "tn": 98,
+      "precision": 0.511,
+      "recall": 0.607,
+      "f1": 0.555,
+      "accuracy": 0.488,
+      "balanced_accuracy": 0.481,
+      "mcc": -0.038
+    }
+  }
+}

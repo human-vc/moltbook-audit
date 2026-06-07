@@ -1,0 +1,25 @@
+{
+  "window": [
+    "2026-02-02",
+    "2026-05-28"
+  ],
+  "heuristic_quality": {
+    "n_treat": 28017,
+    "n_control": 57,
+    "n_matched_strata": 17,
+    "matched_treat": 10409,
+    "matched_control": 32,
+    "control_match_rate": 0.561,
+    "l1_before": 0.722,
+    "l1_after": 0.544,
+    "att": {
+      "estimate": -0.13647795634731394,
+      "se": 0.041048256243399035,
+      "p": 0.0008847646305649915,
+      "ci95": [
+        -0.21693106021254746,
+        -0.05602485248208042
+      ]
+    }
+  }
+}
