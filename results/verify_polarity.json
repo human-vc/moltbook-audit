@@ -1,0 +1,48 @@
+{
+  "mean_cov": {
+    "self_disclosed_AI": 2.022,
+    "not_self_AI": 1.416,
+    "unclaimed": 1.766,
+    "claimed": 1.162,
+    "no_x_handle": 1.531,
+    "x_linked": 1.254
+  },
+  "AUC_highcov_predicts": {
+    "self_AI(auto)": 0.62,
+    "unclaimed(non-human)": 0.679,
+    "no_x(non-human)": 0.582
+  },
+  "spearman_cov_vs_nevents": 0.409,
+  "cov_AUC_within_nevent_quartiles": {
+    "Q1_n<= 6": {
+      "n": 6648,
+      "auc_cov_vs_selfAI": 0.617,
+      "mean_cov_auto": 1.069,
+      "mean_cov_human": 0.846
+    },
+    "Q2_n<= 9": {
+      "n": 5367,
+      "auc_cov_vs_selfAI": 0.604,
+      "mean_cov_auto": 1.24,
+      "mean_cov_human": 1.014
+    },
+    "Q3_n<= 16": {
+      "n": 5119,
+      "auc_cov_vs_selfAI": 0.518,
+      "mean_cov_auto": 1.482,
+      "mean_cov_human": 1.378
+    },
+    "Q4_n<= 1000000000000000000": {
+      "n": 5331,
+      "auc_cov_vs_selfAI": 0.622,
+      "mean_cov_auto": 2.604,
+      "mean_cov_human": 1.851
+    }
+  },
+  "shutdown_reconcile": {
+    "median_hours_return_self_AI": 29.61,
+    "median_hours_return_x_linked": 126.95,
+    "spearman_cov_vs_return_hours": -0.091,
+    "note": "if self-AI return LATER than humans => Li's early=human holds AND high-cov=auto holds (consistent); spearman(cov,return)>0 means high-cov agents return later (autonomous resume on own clock)"
+  }
+}
