@@ -1,0 +1,13 @@
+{
+  "n_scored_agents": 62348,
+  "n_self_disclosed_AI_scored": 1906,
+  "n_x_linked_scored": 21688,
+  "mean_cov_self_AI": 2.021729257473574,
+  "mean_cov_not_self_AI": 1.4161870850649523,
+  "mean_cov_x_linked_human": 1.2536258044644026,
+  "AUC_negcov_vs_selfAI_full": 0.3800595147054682,
+  "clean2class_n_auto": 1906,
+  "clean2class_n_human": 20559,
+  "AUC_negcov_selfAI_vs_xhuman": 0.3195491878185206,
+  "interpretation": "AUC>0.6 => CoV has real validity against clean labels (salvageable); AUC~0.5 => no signal; AUC<0.5 => inverted (CoV invalid as autonomy proxy)"
+}

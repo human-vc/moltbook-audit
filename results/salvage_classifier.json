@@ -1,0 +1,37 @@
+{
+  "n_auto": 1906,
+  "n_human": 20559,
+  "feature_means_auto": {
+    "cov": 2.022,
+    "log_n": 3.283,
+    "log_gap_h": 1.92,
+    "hour_entropy": 0.704,
+    "active_hours": 12.818,
+    "round_tick_frac": 0.139,
+    "gap_skew": 0.196
+  },
+  "feature_means_human": {
+    "cov": 1.22,
+    "log_n": 2.474,
+    "log_gap_h": 1.788,
+    "hour_entropy": 0.612,
+    "active_hours": 8.656,
+    "round_tick_frac": 0.177,
+    "gap_skew": NaN
+  },
+  "single_feature_AUC": {
+    "cov": 0.68,
+    "log_n": 0.72,
+    "log_gap_h": 0.542,
+    "hour_entropy": 0.641,
+    "active_hours": 0.665,
+    "round_tick_frac": 0.504,
+    "gap_skew": 0.365
+  },
+  "cv_auc_logistic_all": 0.8,
+  "cv_auc_gbm_all": 0.83,
+  "cv_auc_logistic_no_logn": 0.789,
+  "cv_auc_gbm_no_logn": 0.821,
+  "cv_auc_logistic_cadence_circadian_only": 0.737,
+  "cv_auc_gbm_cadence_circadian_only": 0.78
+}
