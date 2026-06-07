@@ -40,6 +40,7 @@ def exact_permutation(a, b, alpha=0.05):
         permutation_type="independent",
         vectorized=True,
         n_resamples=n_resamples,
+        batch=2000,
         alternative="two-sided",
         random_state=SEED,
     )
@@ -83,6 +84,7 @@ def effect_and_bootstrap(a, b, confidence_level=0.95):
         confidence_level=confidence_level,
         method="BCa",
         n_resamples=9999,
+        batch=500,
         random_state=SEED,
     )
     return {

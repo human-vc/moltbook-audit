@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import sys
 
 import numpy as np
@@ -104,12 +105,35 @@ def build(data_dir, start, end, sample, max_chars, out):
                dict(zip(*[list(x) for x in np.unique(sub["contrib_bucket"].to_numpy(), return_counts=True)])))
 
 
+_THINK = re.compile(r"<think>.*?</think>", re.DOTALL)
+_FENCE = re.compile(r"```(?:json)?\s*(\{.*?\})\s*```", re.DOTALL)
+
+
 def _parse(text):
-    try:
-        d = json.loads(text)
-        return {k: int(d[k]) for k in DIMS if k in d}
-    except Exception:
+    if not text:
         return None
+    t = _THINK.sub("", text)
+    cands = _FENCE.findall(t)
+    m = re.search(r"\{.*\}", t, re.DOTALL)
+    if m:
+        cands.append(m.group(0))
+    cands.append(t.strip())
+    for c in cands:
+        try:
+            d = json.loads(c)
+        except Exception:
+            continue
+        if isinstance(d, dict) and any(x in d for x in DIMS):
+            out = {}
+            for x in DIMS:
+                if x in d and d[x] is not None:
+                    try:
+                        out[x] = int(round(float(d[x])))
+                    except Exception:
+                        pass
+            if out:
+                return out
+    return None
 
 
 def _aggregate(samples):
@@ -127,23 +151,37 @@ def _aggregate(samples):
 def judge(threads_path, model, k, max_model_len, temperature, out):
     from vllm import LLM, SamplingParams
     df = pl.read_parquet(threads_path)
-    try:
-        from vllm.sampling_params import GuidedDecodingParams
-        sp = SamplingParams(n=k, temperature=temperature, top_p=0.95, max_tokens=512, seed=SEED,
-                            guided_decoding=GuidedDecodingParams(json=SCHEMA))
-    except Exception as e:
-        log.warning("guided decoding unavailable (%s); relying on prompt + defensive parse", e)
-        sp = SamplingParams(n=k, temperature=temperature, top_p=0.95, max_tokens=512, seed=SEED)
+    base = dict(n=k, temperature=temperature, top_p=0.95, max_tokens=700, seed=SEED)
+    sp = None
+    for mod in ("structured", "guided"):
+        try:
+            if mod == "structured":
+                from vllm.sampling_params import StructuredOutputsParams
+                sp = SamplingParams(**base, structured_outputs=StructuredOutputsParams(json=SCHEMA))
+            else:
+                from vllm.sampling_params import GuidedDecodingParams
+                sp = SamplingParams(**base, guided_decoding=GuidedDecodingParams(json=SCHEMA))
+            log.info("constrained JSON via %s outputs", mod)
+            break
+        except Exception as e:
+            log.warning("%s outputs unavailable: %s", mod, e)
+    if sp is None:
+        sp = SamplingParams(**base)
+        log.warning("no constrained decoding; relying on no-think prompt + defensive parse")
     llm = LLM(model=model, dtype="auto", max_model_len=max_model_len,
               gpu_memory_utilization=0.92, enable_prefix_caching=True)
     convos = [[{"role": "system", "content": SYSTEM},
                {"role": "user", "content": RUBRIC + "\n\n[THREAD]\n" + t}]
               for t in df["thread_text"].to_list()]
-    outs = llm.chat(convos, sp)
+    try:
+        outs = llm.chat(convos, sp, chat_template_kwargs={"enable_thinking": False})
+    except TypeError:
+        outs = llm.chat(convos, sp)
     rows = []
     for pid, o in zip(df["post_id"].to_list(), outs):
-        samples = [d for d in (_parse(c.text) for c in o.outputs) if d]
-        rows.append({"post_id": pid, **_aggregate(samples)})
+        texts = [c.text for c in o.outputs]
+        samples = [d for d in (_parse(t) for t in texts) if d]
+        rows.append({"post_id": pid, **_aggregate(samples), "raw0": texts[0] if texts else None})
     scores = pl.DataFrame(rows)
     res = df.select(["post_id", "submolt", "n_contributors", "n_comments", "duration_min", "has_code"]).join(
         scores, on="post_id", how="left")
