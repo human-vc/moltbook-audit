@@ -1,0 +1,40 @@
+{
+  "n_scored_agents": 62348,
+  "training_prior_auto": 0.085,
+  "n_labeled_train": 22465,
+  "CAVEATS": [
+    "arbitrary label prior (label availability, not truth) => absolute % unreliable",
+    "X-linked 'human' may be human-OWNED scheduled bots, not real-time steering",
+    "self-disclosed AIs are a subset; extrapolation to unlabeled ~middle is uncertain",
+    "report as a RANGE bracketed by conservative(GBM) and prior-neutral(balanced-LR), not a point estimate"
+  ],
+  "conservative_gbm": {
+    "0.3": {
+      "account_share_auto": 0.061,
+      "activity_share_auto": 0.273
+    },
+    "0.5": {
+      "account_share_auto": 0.015,
+      "activity_share_auto": 0.103
+    },
+    "0.7": {
+      "account_share_auto": 0.001,
+      "activity_share_auto": 0.017
+    }
+  },
+  "prior_neutral_lr": {
+    "0.3": {
+      "account_share_auto": 0.712,
+      "activity_share_auto": 0.876
+    },
+    "0.5": {
+      "account_share_auto": 0.218,
+      "activity_share_auto": 0.556
+    },
+    "0.7": {
+      "account_share_auto": 0.088,
+      "activity_share_auto": 0.36
+    }
+  },
+  "original_filter_for_contrast": "single-CoV>0.75 labeled 72.7% of agents 'human-steered' (inverted polarity, invalid)"
+}
