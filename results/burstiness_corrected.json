@@ -1,0 +1,31 @@
+{
+  "n_agents": 62348,
+  "confound_check_spearman_vs_ngaps": {
+    "raw_CoV": 0.523,
+    "B_raw": 0.523,
+    "A_kimjo_corrected": 0.285
+  },
+  "clean2class": {
+    "n_auto": 1906,
+    "n_human": 20559
+  },
+  "mean_by_class": {
+    "CoV": {
+      "auto": 2.022,
+      "human": 1.22
+    },
+    "B_raw": {
+      "auto": 0.209,
+      "human": -0.052
+    },
+    "A_kimjo": {
+      "auto": 0.355,
+      "human": 0.106
+    }
+  },
+  "AUC_predicts_autonomous": {
+    "raw_CoV": 0.68,
+    "B_raw": 0.68,
+    "A_kimjo_corrected": 0.618
+  }
+}
