@@ -290,8 +290,7 @@ def _neutral_quality(texts):
     return float(np.clip(0.6 * best + 0.25 * resolved + 0.15 * code_any, 0, 1))
 
 
-def task3(posts, comments):
-    from scipy import stats
+def _collab_single_frames(posts, comments):
     import pandas as pd
     pmeta = posts.select(["id", "agent_id", "submolt", "title", "content"]).rename(
         {"id": "post_id", "agent_id": "post_author", "content": "post_content"})
@@ -315,9 +314,10 @@ def task3(posts, comments):
             collab.append(rec)
         elif len(parts) == 1:
             single.append(rec)
-    res = {"n_collab": len(collab), "n_single": len(single)}
+    meta = {"n_collab": len(collab), "n_single": len(single)}
     if len(collab) < 5 or len(single) < 5:
-        res["result"] = "insufficient"; return res
+        meta["result"] = "insufficient"
+        return None, None, meta
     cdf, sdf = pd.DataFrame(collab), pd.DataFrame(single)
     idxs = []
     for _, rr in cdf.iterrows():
@@ -326,7 +326,25 @@ def task3(posts, comments):
         if len(m):
             idxs.append(m.sample(min(5, len(m)), random_state=SEED).index.to_numpy())
     base = sdf.loc[np.unique(np.concatenate(idxs))] if idxs else sdf
-    res["n_matched_single"] = int(len(base))
+    meta["n_matched_single"] = int(len(base))
+    return cdf, base, meta
+
+
+def collab_arrays(posts, comments):
+    cdf, base, meta = _collab_single_frames(posts, comments)
+    out = {"meta": meta}
+    if cdf is not None:
+        for metric in ("biased", "neutral"):
+            out[metric] = (cdf[metric].to_numpy(), base[metric].to_numpy())
+    return out
+
+
+def task3(posts, comments):
+    from scipy import stats
+    cdf, base, meta = _collab_single_frames(posts, comments)
+    res = dict(meta)
+    if cdf is None:
+        return res
     rng = np.random.RandomState(SEED)
     for metric in ("biased", "neutral"):
         a, b = cdf[metric].to_numpy(), base[metric].to_numpy()
