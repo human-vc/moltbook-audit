@@ -1,0 +1,117 @@
+{
+  "source": "aisilab/moltbook-files (independent collector)",
+  "counts": {
+    "posts": 232498,
+    "comments": 2202962,
+    "agents": 34906,
+    "graph_nodes": 33813,
+    "graph_edges": 588343
+  },
+  "id_overlap_vs_main": {
+    "main_ids": 3105136,
+    "aisilab_ids": 232498,
+    "post_id_overlap": 230207,
+    "overlap_frac_of_aisilab": 0.99,
+    "interpretation": "NOT independent: 99% of aisilab posts are the SAME posts as the main archive; this is collector/schema robustness only, not independent replication"
+  },
+  "task1": {
+    "n_nodes": 33813,
+    "n_edges": 588343,
+    "periphery_frac_deg_le_1": 0.11019430396593026,
+    "gini_total_degree": 0.7835927118567114,
+    "observed": {
+      "reciprocity": 0.13578813719208013,
+      "transitivity": 0.02289763405315524,
+      "assortativity": -0.2141407913460331
+    }
+  },
+  "task1_nulls": {
+    "reciprocity": {
+      "observed": 0.13578813719208013,
+      "null_mean": 0.02494758623589155,
+      "null_std": 0.0002257446608938525,
+      "z": 490.9996565026491,
+      "emp_p": 0.0,
+      "null_n": 50
+    },
+    "transitivity": {
+      "observed": 0.02289763405315524,
+      "null_mean": 0.03666668944601176,
+      "null_std": 0.00011348117391151245,
+      "z": -121.33338877506688,
+      "emp_p": 0.0,
+      "null_n": 50
+    },
+    "assortativity": {
+      "observed": -0.2141407913460331,
+      "null_mean": -0.1263283529604638,
+      "null_std": 0.0005512173317555886,
+      "z": -159.30638121608553,
+      "emp_p": 0.0,
+      "null_n": 50
+    }
+  },
+  "communities": {
+    "n_communities": 89,
+    "modularity": 0.3117756131677717,
+    "sizes_top": [
+      18563,
+      9458,
+      2800,
+      677,
+      325,
+      298,
+      277,
+      248
+    ],
+    "modularity_vs_null": {
+      "null_mean": 0.02471228249488199,
+      "null_std": 0.0007327822976376147,
+      "z": 391.74435790594396,
+      "emp_p": 0.0
+    },
+    "ari_leiden_vs_kmeans": 0.01681381111750042,
+    "ari_note": "low ARI => k-means degree-roles are not the community structure"
+  },
+  "cascades": {
+    "n_cascades": 506,
+    "total_adopting_agents": 2934,
+    "powerlaw": {
+      "n": 506,
+      "alpha": 2.159954260161536,
+      "xmin": 3.0,
+      "n_tail": 222,
+      "frac_mass_in_tail": 0.43873517786561267,
+      "lognormal": {
+        "R": -0.21628748399660716,
+        "p": 0.8287636645063475,
+        "powerlaw_favored": false
+      },
+      "exponential": {
+        "R": 4.297205810492729,
+        "p": 1.7296458853374647e-05,
+        "powerlaw_favored": true
+      },
+      "truncated_power_law": {
+        "R": -0.6792167935070148,
+        "p": 0.5095781580601757,
+        "powerlaw_favored": false
+      },
+      "verdict": "heavy-tailed; power-law NOT distinguishable from lognormal (do not claim power-law)"
+    },
+    "size_gini_vs_null": {
+      "observed": 0.573963157852195,
+      "null_mean": 0.6389527723360281,
+      "null_std": 0.0005018174683772058,
+      "emp_p": 1.0
+    }
+  },
+  "human_share": {
+    "cov_threshold": 0.75,
+    "n_agents_scored": 14342,
+    "n_human_steered": 13371,
+    "n_autonomous": 971,
+    "comments_classifiable": 2195201,
+    "human_steered_comment_share": 0.9987
+  }
+}

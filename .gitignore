@@ -215,3 +215,5 @@ moltbook-observatory-archive/
 # local data (downloaded separately, not in repo)
 /moltbook-observatory-archive
 /moltbook-observatory-archive/
+
+data_aisilab/
