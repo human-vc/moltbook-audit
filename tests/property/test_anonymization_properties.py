@@ -68,25 +68,21 @@ class TestAnonymizationDeterminism:
         but extremely unlikely with SHA-256.
         """
         if id1 == id2:
-            return  # Skip if inputs are the same
+            return
         
         result1 = anonymize_agent_id(id1)
         result2 = anonymize_agent_id(id2)
         
-        # With 16 hex chars (64 bits), collision probability is negligible
         assert result1 != result2, (
             f"Collision detected: '{id1}' and '{id2}' both hash to '{result1}'"
         )
     
     def test_known_hash_values(self):
         """Verify against known SHA-256 hash values."""
-        # SHA-256("test") = 9f86d081884c7d659a2feaa0c55ad015...
         assert anonymize_agent_id("test") == "9f86d081884c7d65"
         
-        # SHA-256("agent123") = f44d1ac9bf0c69b0...
         assert anonymize_agent_id("agent123") == "f44d1ac9bf0c69b0"
         
-        # SHA-256("") = e3b0c44298fc1c149afbf4c8996fb924...
         assert anonymize_agent_id("") == "e3b0c44298fc1c14"
     
     @given(agent_id=st.text(min_size=1, max_size=100))
@@ -106,7 +102,7 @@ class TestAnonymizationDeterminism:
         try:
             text = agent_id.decode('utf-8')
         except UnicodeDecodeError:
-            return  # Skip invalid UTF-8 sequences
+            return
         
         result1 = anonymize_agent_id(text)
         result2 = anonymize_agent_id(text)
@@ -138,11 +134,10 @@ class TestAnonymizationEdgeCases:
     
     def test_unicode_characters(self):
         """Unicode characters should be handled correctly."""
-        unicode_input = "🦞🤖💬"  # Lobster, robot, speech bubble
+        unicode_input = "🦞🤖💬"
         result = anonymize_agent_id(unicode_input)
         assert len(result) == 16
         
-        # Should be deterministic
         assert anonymize_agent_id(unicode_input) == result
     
     def test_whitespace_variations(self):

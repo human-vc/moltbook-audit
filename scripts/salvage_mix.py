@@ -39,7 +39,7 @@ def main():
         (pl.col("owner_x_handle").is_not_null() & (pl.col("owner_x_handle").cast(pl.Utf8).str.len_chars() > 0)).alias("has_x"),
     ])
     Xall = np.nan_to_num(d.select(COLS).to_numpy().astype(float), nan=0.0, posinf=0.0, neginf=0.0)
-    nev = np.expm1(d["log_n"].to_numpy())          # approx raw event count for activity weighting
+    nev = np.expm1(d["log_n"].to_numpy())
     self_ai = d["self_ai"].to_numpy()
     has_x = d["has_x"].to_numpy()
 
@@ -50,7 +50,6 @@ def main():
     lr = make_pipeline(StandardScaler(), LogisticRegression(max_iter=2000, class_weight="balanced"))
     cv = StratifiedKFold(5, shuffle=True, random_state=42)
 
-    # population probabilities: out-of-fold for labeled, fitted-model for the rest
     def pop_prob(est):
         p = np.full(len(Xall), np.nan)
         oof = cross_val_predict(est, Xtr, ytr, cv=cv, method="predict_proba")[:, 1]
@@ -60,8 +59,8 @@ def main():
         p[rest] = est.predict_proba(Xall[rest])[:, 1]
         return p
 
-    p_gb = pop_prob(GradientBoostingClassifier(random_state=42))      # prior = training (~8.5% auto) -> conservative
-    p_lr = pop_prob(make_pipeline(StandardScaler(), LogisticRegression(max_iter=2000, class_weight="balanced")))  # prior-neutralized
+    p_gb = pop_prob(GradientBoostingClassifier(random_state=42))
+    p_lr = pop_prob(make_pipeline(StandardScaler(), LogisticRegression(max_iter=2000, class_weight="balanced")))
 
     out = {
         "n_scored_agents": int(len(Xall)),

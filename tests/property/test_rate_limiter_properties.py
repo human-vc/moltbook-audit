@@ -28,7 +28,7 @@ class TestRateLimitingEnforcement:
         delay=st.floats(min_value=0.05, max_value=0.2),
         n_requests=st.integers(min_value=2, max_value=5)
     )
-    @settings(max_examples=20, deadline=None)  # Disable deadline for timing tests
+    @settings(max_examples=20, deadline=None)
     def test_minimum_elapsed_time(self, delay: float, n_requests: int):
         """Total elapsed time should be at least (N-1) * delay."""
         limiter = RateLimiter(delay=delay)
@@ -41,7 +41,6 @@ class TestRateLimitingEnforcement:
         elapsed = time.time() - start_time
         expected_minimum = (n_requests - 1) * delay
         
-        # Allow small tolerance for timing imprecision
         tolerance = 0.01 * n_requests
         
         assert elapsed >= expected_minimum - tolerance, (
@@ -55,17 +54,14 @@ class TestRateLimitingEnforcement:
         """Two consecutive requests should be separated by at least delay."""
         limiter = RateLimiter(delay=delay)
         
-        # First request
         limiter.wait()
         time1 = limiter.get_last_request_time()
         
-        # Second request
         limiter.wait()
         time2 = limiter.get_last_request_time()
         
         actual_delay = time2 - time1
         
-        # Allow small tolerance
         tolerance = 0.01
         
         assert actual_delay >= delay - tolerance, (
@@ -80,7 +76,6 @@ class TestRateLimitingEnforcement:
         wait_time = limiter.wait()
         elapsed = time.time() - start
         
-        # First request should be nearly instant
         assert elapsed < 0.1, f"First request waited {elapsed}s"
         assert wait_time == 0.0, f"First request reported wait time {wait_time}"
     
@@ -89,13 +84,10 @@ class TestRateLimitingEnforcement:
         delay = 0.1
         limiter = RateLimiter(delay=delay)
         
-        # First request
         limiter.wait()
         
-        # Wait longer than delay
         time.sleep(delay * 1.5)
         
-        # Second request should not need to wait
         start = time.time()
         wait_time = limiter.wait()
         elapsed = time.time() - start
@@ -109,14 +101,11 @@ class TestRateLimitingEnforcement:
         """wait() should return the actual time waited."""
         limiter = RateLimiter(delay=delay)
         
-        # First request - no wait
         wait1 = limiter.wait()
         assert wait1 == 0.0
         
-        # Immediate second request - should wait
         wait2 = limiter.wait()
         
-        # Wait time should be close to delay
         tolerance = 0.02
         assert abs(wait2 - delay) < tolerance, (
             f"Reported wait {wait2:.4f}s differs from delay {delay:.4f}s"
@@ -156,7 +145,6 @@ class TestRateLimiterThreadSafety:
         total_requests = n_threads * n_requests_per_thread
         expected_minimum = (total_requests - 1) * delay
         
-        # Allow tolerance for thread scheduling
         tolerance = 0.05 * total_requests
         
         assert elapsed >= expected_minimum - tolerance, (

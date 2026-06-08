@@ -70,7 +70,6 @@ def main():
         pl.col("agent_id").is_in(list(disc)).alias("self_ai"),
         (pl.col("owner_x_handle").is_not_null() & (pl.col("owner_x_handle").cast(pl.Utf8).str.len_chars() > 0)).alias("has_x"),
     ])
-    # clean two-class: self-disclosed AI (autonomous=1) vs X-linked & not-self-AI (human=0)
     sub = d.filter(pl.col("self_ai") | (pl.col("has_x") & ~pl.col("self_ai")))
     y = sub["self_ai"].to_numpy().astype(int)
     cols = ["cov", "log_n", "log_gap_h", "hour_entropy", "active_hours", "round_tick_frac", "gap_skew"]
@@ -80,7 +79,6 @@ def main():
            "feature_means_auto": {c: round(float(sub.filter(pl.col("self_ai")).select(c).to_numpy().mean()), 3) for c in cols},
            "feature_means_human": {c: round(float(sub.filter(~pl.col("self_ai")).select(c).to_numpy().mean()), 3) for c in cols}}
 
-    # single-feature AUCs (flipped where needed): use each feature alone
     from scipy.stats import rankdata
     def auc1(s, yy):
         s = np.asarray(s, float); n1 = yy.sum(); n0 = len(yy) - n1

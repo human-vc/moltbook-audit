@@ -28,7 +28,6 @@ def create_scraper():
     return MoltBookScraper(config, db)
 
 
-# Strategies for generating valid API response data
 agent_data_strategy = st.fixed_dictionaries({
     "id": st.text(min_size=1, max_size=50, alphabet=st.characters(whitelist_categories=('L', 'N'))),
     "username": st.text(min_size=1, max_size=50),
@@ -134,29 +133,21 @@ class TestAPIResponseParsingCompleteness:
     def test_missing_required_agent_fields_returns_none(self):
         """Missing required fields should return None, not raise."""
         scraper = create_scraper()
-        # Missing id
         assert scraper._parse_agent({"username": "test"}) is None
-        # Missing username
         assert scraper._parse_agent({"id": "123"}) is None
-        # Empty dict
         assert scraper._parse_agent({}) is None
     
     def test_missing_required_post_fields_returns_none(self):
         """Missing required post fields should return None."""
         scraper = create_scraper()
-        # Missing id
         assert scraper._parse_post({"author_id": "a", "title": "t"}) is None
-        # Missing author_id
         assert scraper._parse_post({"id": "1", "title": "t"}) is None
-        # Missing title
         assert scraper._parse_post({"id": "1", "author_id": "a"}) is None
     
     def test_missing_required_comment_fields_returns_none(self):
         """Missing required comment fields should return None."""
         scraper = create_scraper()
-        # Missing id
         assert scraper._parse_comment({"author_id": "a"}, "post1") is None
-        # Missing author_id
         assert scraper._parse_comment({"id": "1"}, "post1") is None
 
 
@@ -175,12 +166,11 @@ class TestInteractionDerivationCorrectness:
             comment_id="comment1",
             post_id="post1",
             author_id="agent_a",
-            parent_comment_id=None,  # Direct reply to post
+            parent_comment_id=None,
             body="Test comment",
             created_at=datetime(2026, 1, 30, 12, 0, 0),
         )
         
-        # Mock database to return post author
         scraper.db.get_post_author.return_value = "agent_b"
         
         interaction = scraper._derive_interaction(comment)
@@ -199,12 +189,11 @@ class TestInteractionDerivationCorrectness:
             comment_id="comment2",
             post_id="post1",
             author_id="agent_a",
-            parent_comment_id="comment1",  # Reply to another comment
+            parent_comment_id="comment1",
             body="Test reply",
             created_at=datetime(2026, 1, 30, 13, 0, 0),
         )
         
-        # Mock database to return parent comment author
         scraper.db.get_comment_author.return_value = "agent_c"
         
         interaction = scraper._derive_interaction(comment)
@@ -228,7 +217,6 @@ class TestInteractionDerivationCorrectness:
             created_at=datetime.now(),
         )
         
-        # Same author for post and comment
         scraper.db.get_post_author.return_value = "agent_a"
         
         interaction = scraper._derive_interaction(comment)
@@ -247,7 +235,6 @@ class TestInteractionDerivationCorrectness:
             created_at=datetime.now(),
         )
         
-        # Post author not found
         scraper.db.get_post_author.return_value = None
         
         interaction = scraper._derive_interaction(comment)
@@ -262,7 +249,7 @@ class TestInteractionDerivationCorrectness:
     @settings(max_examples=50, suppress_health_check=[HealthCheck.function_scoped_fixture])
     def test_interaction_preserves_all_fields(self, source_id, target_id, timestamp):
         """Interaction should preserve source, target, and timestamp exactly."""
-        assume(source_id != target_id)  # Skip self-interactions
+        assume(source_id != target_id)
         
         scraper = create_scraper()
         comment = Comment(

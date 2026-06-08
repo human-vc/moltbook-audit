@@ -111,7 +111,6 @@ class Database:
         
         logger.info("Database schema initialized")
     
-    # ==================== Agent Operations ====================
     
     def insert_agent(self, agent: Agent) -> str:
         """Insert or update an agent record.
@@ -187,7 +186,6 @@ class Database:
                 cur.execute("SELECT COUNT(*) FROM agents")
                 return cur.fetchone()[0]
     
-    # ==================== Post Operations ====================
     
     def insert_post(self, post: Post) -> str:
         """Insert or update a post record.
@@ -198,7 +196,6 @@ class Database:
         Returns:
             Post ID.
         """
-        # Ensure submolt exists
         if post.submolt:
             self._ensure_submolt(post.submolt)
         
@@ -221,7 +218,6 @@ class Database:
                     post.created_at, post.scraped_at or datetime.now()
                 ))
         
-        # Update agent-submolt membership
         if post.submolt and post.author_id:
             self._update_membership(post.author_id, post.submolt, post.created_at)
         
@@ -266,7 +262,6 @@ class Database:
         
         return [Post(**row) for row in rows]
     
-    # ==================== Comment Operations ====================
     
     def insert_comment(self, comment: Comment) -> str:
         """Insert or update a comment record.
@@ -334,7 +329,6 @@ class Database:
         
         return [Comment(**row) for row in rows]
     
-    # ==================== Interaction Operations ====================
     
     def insert_interaction(self, interaction: Interaction) -> None:
         """Insert an interaction record.
@@ -407,7 +401,6 @@ class Database:
         with self.get_connection() as conn:
             return pd.read_sql(query, conn, params=params or None)
     
-    # ==================== Submolt Operations ====================
     
     def _ensure_submolt(self, name: str) -> None:
         """Ensure a submolt exists in the database."""
@@ -454,7 +447,6 @@ class Database:
         
         return [Submolt(**row) for row in rows]
     
-    # ==================== Membership Operations ====================
     
     def _update_membership(
         self, 
@@ -492,7 +484,6 @@ class Database:
         with self.get_connection() as conn:
             return pd.read_sql(query, conn)
     
-    # ==================== Utility Methods ====================
     
     def get_post_author(self, post_id: str) -> Optional[str]:
         """Get the author ID of a post."""

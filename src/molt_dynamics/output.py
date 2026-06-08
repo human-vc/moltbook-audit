@@ -43,14 +43,12 @@ class OutputGenerator:
         Returns:
             LaTeX table string.
         """
-        # Convert to LaTeX
         latex = df.to_latex(
             index=True,
             float_format=float_format,
             escape=True,
         )
         
-        # Wrap in table environment
         table = f"""\\begin{{table}}[htbp]
 \\centering
 \\caption{{{caption}}}
@@ -115,11 +113,10 @@ class OutputGenerator:
         
         output_path.mkdir(parents=True, exist_ok=True)
         
-        # Export agents (already anonymized in storage)
         agents = storage.get_agents()
         agents_df = pd.DataFrame([
             {
-                'agent_id': a.agent_id,  # Already hashed
+                'agent_id': a.agent_id,
                 'join_date': a.join_date,
                 'post_count': a.post_count,
                 'comment_count': a.comment_count,
@@ -129,12 +126,11 @@ class OutputGenerator:
         ])
         agents_df.to_csv(output_path / 'agents.csv', index=False)
         
-        # Export posts
         posts = storage.get_posts()
         posts_df = pd.DataFrame([
             {
                 'post_id': p.post_id,
-                'author_id': p.author_id,  # Already hashed
+                'author_id': p.author_id,
                 'submolt': p.submolt,
                 'created_at': p.created_at,
                 'upvotes': p.upvotes,
@@ -144,7 +140,6 @@ class OutputGenerator:
         ])
         posts_df.to_csv(output_path / 'posts.csv', index=False)
         
-        # Export interactions
         interactions = storage.get_interactions()
         interactions_df = pd.DataFrame([
             {
@@ -246,19 +241,14 @@ def validate_deidentified_export(export_path: str) -> bool:
     """
     export_path = Path(export_path)
     
-    # Check each CSV file
     for csv_file in export_path.glob('*.csv'):
         df = pd.read_csv(csv_file)
         
-        # Check for any columns that might contain original IDs
         for col in df.columns:
             if 'id' in col.lower():
-                # All IDs should be 16-char hex strings (hashed)
                 for value in df[col].dropna():
                     if isinstance(value, str):
-                        # Should be 16 hex characters
                         if len(value) != 16 or not all(c in '0123456789abcdef' for c in value):
-                            # Could be a post_id or other non-agent ID
                             if 'agent' in col.lower():
                                 logger.warning(f"Potential unhashed ID in {csv_file}: {value}")
                                 return False

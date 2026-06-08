@@ -32,19 +32,15 @@ class TestConfigOverridePrecedence:
     @settings(max_examples=100)
     def test_cli_overrides_yaml_random_seed(self, yaml_seed: int, cli_seed: int):
         """CLI random_seed should override YAML value."""
-        # Create temporary YAML config
         with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
             f.write(f"random_seed: {yaml_seed}\n")
             yaml_path = f.name
         
         try:
-            # Load from YAML
             config = Config.from_yaml(yaml_path)
             
-            # Override with CLI argument
             final_config = config.override_from_args(random_seed=cli_seed)
             
-            # CLI value should take precedence
             assert final_config.random_seed == cli_seed
         finally:
             os.unlink(yaml_path)
@@ -131,7 +127,6 @@ class TestConfigOverridePrecedence:
         
         try:
             config = Config.from_yaml(yaml_path)
-            # Pass None explicitly - should not override
             final_config = config.override_from_args(random_seed=None, figure_dpi=None)
             assert final_config.random_seed == 123
             assert final_config.figure_dpi == 400
@@ -146,12 +141,11 @@ class TestConfigOverridePrecedence:
         
         try:
             config = Config.from_yaml(yaml_path)
-            # Only override random_seed
             final_config = config.override_from_args(random_seed=999)
             
-            assert final_config.random_seed == 999  # Overridden
-            assert final_config.figure_dpi == 200   # Preserved from YAML
-            assert final_config.lda_topics == 15    # Preserved from YAML
+            assert final_config.random_seed == 999
+            assert final_config.figure_dpi == 200
+            assert final_config.lda_topics == 15
         finally:
             os.unlink(yaml_path)
 

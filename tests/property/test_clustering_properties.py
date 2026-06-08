@@ -55,7 +55,7 @@ class TestClusterAssignmentCompleteness:
     @settings(max_examples=30, suppress_health_check=[HealthCheck.too_slow], deadline=None)
     def test_every_agent_assigned_to_one_cluster(self, n_agents: int, k: int):
         """Every agent should be assigned to exactly one cluster."""
-        assume(n_agents >= k)  # Need at least k agents
+        assume(n_agents >= k)
         
         features = create_test_features(n_agents)
         config = Config()
@@ -63,12 +63,10 @@ class TestClusterAssignmentCompleteness:
         analyzer = RoleAnalyzer(features, config)
         labels = analyzer.perform_clustering(k)
         
-        # Every agent should have a label
         assert len(labels) == n_agents, (
             f"Expected {n_agents} labels, got {len(labels)}"
         )
         
-        # All labels should be valid cluster indices
         assert all(0 <= label < k for label in labels), (
             f"Labels should be in range [0, {k}), got {set(labels)}"
         )
@@ -80,7 +78,7 @@ class TestClusterAssignmentCompleteness:
     @settings(max_examples=30, suppress_health_check=[HealthCheck.too_slow], deadline=None)
     def test_k_distinct_clusters(self, n_agents: int, k: int):
         """Number of distinct cluster labels should equal k."""
-        assume(n_agents >= k * 3)  # Need enough agents for k clusters
+        assume(n_agents >= k * 3)
         
         features = create_test_features(n_agents)
         config = Config()
@@ -90,7 +88,6 @@ class TestClusterAssignmentCompleteness:
         
         n_unique = len(np.unique(labels))
         
-        # Should have exactly k clusters (or fewer if data doesn't support k)
         assert n_unique <= k, (
             f"Should have at most {k} clusters, got {n_unique}"
         )
@@ -138,14 +135,12 @@ class TestRoleClassificationDeterminism:
         features = create_test_features(50)
         config = Config()
         
-        # Run classification multiple times
         results = []
         for _ in range(n_runs):
             analyzer = RoleAnalyzer(features, config)
             roles = analyzer.classify_roles()
             results.append(roles)
         
-        # All results should be identical
         for i in range(1, len(results)):
             pd.testing.assert_series_equal(
                 results[0], results[i],
@@ -206,7 +201,6 @@ class TestRoleClassificationDeterminism:
         
         config = Config()
         
-        # Classify twice
         analyzer1 = RoleAnalyzer(features, config)
         role1 = analyzer1.classify_roles().iloc[0]
         

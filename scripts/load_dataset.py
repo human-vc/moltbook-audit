@@ -21,7 +21,6 @@ import logging
 import sys
 from pathlib import Path
 
-# Add src to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from molt_dynamics.config import Config
@@ -82,7 +81,6 @@ def main():
     
     args = parser.parse_args()
     
-    # Validate dataset path
     dataset_path = Path(args.dataset_path)
     if not dataset_path.exists():
         logger.error(f"Dataset not found at {dataset_path}")
@@ -90,22 +88,17 @@ def main():
         logger.error("git clone https://huggingface.co/datasets/SimulaMet/moltbook-observatory-archive")
         sys.exit(1)
     
-    # Load config
     config = Config.from_yaml(args.config)
     
-    # Override output dir if specified
     if args.output_dir:
         config.output_dir = args.output_dir
     
-    # Initialize storage
     storage = JSONStorage(config)
     storage.connect()
     
     try:
-        # Initialize dataset loader
         loader = MoltBookDatasetLoader(config, storage, str(dataset_path))
         
-        # Load all data
         logger.info("=" * 60)
         logger.info("Starting dataset loading")
         logger.info(f"Dataset path: {dataset_path}")
@@ -124,7 +117,6 @@ def main():
             max_comments=args.max_comments
         )
         
-        # Print summary
         logger.info("\n" + "=" * 60)
         logger.info("LOADING SUMMARY")
         logger.info("=" * 60)

@@ -23,7 +23,6 @@ def auc(score, label):
 
 
 def kimjo_A(r, n):
-    # A_n(r) = (sqrt(n+1) r - sqrt(n-1)) / ((sqrt(n+1)-2) r + sqrt(n-1)); valid 0<=r<=sqrt(n-1)
     sp, sm = np.sqrt(n + 1), np.sqrt(n - 1)
     return (sp * r - sm) / ((sp - 2) * r + sm)
 

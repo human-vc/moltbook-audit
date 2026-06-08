@@ -19,14 +19,12 @@ class Config:
     Command-line arguments take precedence over config file values.
     """
     
-    # Database settings (legacy, not used with JSON storage)
     db_host: str = "localhost"
     db_port: int = 5432
     db_name: str = "moltbook"
     db_user: str = "postgres"
     db_password: str = ""
     
-    # Analysis parameters
     random_seed: int = 42
     lda_topics: int = 20
     kmeans_k_range: tuple[int, int] = (3, 8)
@@ -35,29 +33,23 @@ class Config:
     bootstrap_iterations: int = 1000
     significance_level: float = 0.05
     
-    # Parallelization (-1 = use all CPUs)
     n_jobs: int = -1
     
-    # Cascade identification
     min_cascade_adopters: int = 5
     ngram_range: tuple[int, int] = (2, 5)
     
-    # Collaboration identification
     min_collab_agents: int = 3
     min_collab_comments: int = 5
     min_collab_duration_minutes: int = 30
     
-    # Phase transition binning
     network_size_bins: list[int] = field(
         default_factory=lambda: [50, 100, 200, 500, 1000, 2000, 5000]
     )
     
-    # Output settings
     figure_dpi: int = 300
     output_dir: str = "output"
     figure_formats: list[str] = field(default_factory=lambda: ["png", "pdf"])
     
-    # Logging
     log_file: str = "molt_analysis.log"
     log_level: str = "INFO"
     
@@ -98,7 +90,6 @@ class Config:
         with open(path) as f:
             yaml_config = yaml.safe_load(f) or {}
         
-        # Start with env config, then override with YAML
         config = cls.from_env()
         
         for key, value in yaml_config.items():

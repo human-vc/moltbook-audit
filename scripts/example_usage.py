@@ -8,7 +8,6 @@ Demonstrates how to load and explore the dataset.
 import sys
 from pathlib import Path
 
-# Add src to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from molt_dynamics.config import Config
@@ -21,20 +20,16 @@ def main():
     print("MoltBook Dataset Loader - Example Usage")
     print("=" * 60)
     
-    # Initialize configuration
     config = Config.from_yaml("config/default.yaml")
     
-    # Initialize storage
     storage = JSONStorage(config)
     storage.connect()
     
-    # Initialize dataset loader
     dataset_path = "moltbook-observatory-archive"
     
     try:
         loader = MoltBookDatasetLoader(config, storage, dataset_path)
         
-        # Example 1: Load a small sample
         print("\n--- Example 1: Load Sample Data ---")
         results = loader.load_all(
             max_agents=100,
@@ -49,7 +44,6 @@ def main():
         print(f"  - {results['submolts']} submolts")
         print(f"  - Duration: {results['duration_seconds']:.2f}s")
         
-        # Example 2: Query the loaded data
         print("\n--- Example 2: Query Loaded Data ---")
         
         agents = storage.get_agents()
@@ -86,7 +80,6 @@ def main():
             for i, submolt in enumerate(submolts[:5], 1):
                 print(f"  {i}. {submolt.name}: {submolt.post_count} posts")
         
-        # Example 3: Get statistics
         print("\n--- Example 3: Storage Statistics ---")
         stats = storage.get_statistics()
         print(f"\nStorage statistics:")

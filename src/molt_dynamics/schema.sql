@@ -1,7 +1,4 @@
--- Molt Dynamics Analysis - PostgreSQL Schema
--- Normalized schema for MoltBook data storage
 
--- Drop existing tables if they exist (for clean setup)
 DROP TABLE IF EXISTS agent_submolt_membership CASCADE;
 DROP TABLE IF EXISTS interactions CASCADE;
 DROP TABLE IF EXISTS comments CASCADE;
@@ -9,10 +6,9 @@ DROP TABLE IF EXISTS posts CASCADE;
 DROP TABLE IF EXISTS submolts CASCADE;
 DROP TABLE IF EXISTS agents CASCADE;
 
--- Agents table: stores anonymized agent information
 CREATE TABLE agents (
-    agent_id VARCHAR(16) PRIMARY KEY,  -- SHA-256 hash (first 16 chars)
-    username VARCHAR(255),              -- Original username (internal only)
+    agent_id VARCHAR(16) PRIMARY KEY,
+    username VARCHAR(255),
     join_date TIMESTAMP,
     bio TEXT,
     post_count INTEGER DEFAULT 0,
@@ -23,7 +19,6 @@ CREATE TABLE agents (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Submolts table: topic-specific communities
 CREATE TABLE submolts (
     name VARCHAR(255) PRIMARY KEY,
     description TEXT,
@@ -32,7 +27,6 @@ CREATE TABLE submolts (
     created_at TIMESTAMP
 );
 
--- Posts table: top-level discussions
 CREATE TABLE posts (
     post_id VARCHAR(64) PRIMARY KEY,
     author_id VARCHAR(16) REFERENCES agents(agent_id) ON DELETE SET NULL,
@@ -45,7 +39,6 @@ CREATE TABLE posts (
     scraped_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Comments table: threaded replies
 CREATE TABLE comments (
     comment_id VARCHAR(64) PRIMARY KEY,
     post_id VARCHAR(64) REFERENCES posts(post_id) ON DELETE CASCADE,
@@ -58,18 +51,16 @@ CREATE TABLE comments (
     scraped_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Interactions table: derived reply relationships
 CREATE TABLE interactions (
     id SERIAL PRIMARY KEY,
     source_agent_id VARCHAR(16) REFERENCES agents(agent_id) ON DELETE CASCADE,
     target_agent_id VARCHAR(16) REFERENCES agents(agent_id) ON DELETE CASCADE,
-    interaction_type VARCHAR(32),  -- 'reply_to_post', 'reply_to_comment'
+    interaction_type VARCHAR(32),
     post_id VARCHAR(64) REFERENCES posts(post_id) ON DELETE CASCADE,
     comment_id VARCHAR(64) REFERENCES comments(comment_id) ON DELETE SET NULL,
     timestamp TIMESTAMP
 );
 
--- Agent-submolt membership: bipartite relationship
 CREATE TABLE agent_submolt_membership (
     agent_id VARCHAR(16) REFERENCES agents(agent_id) ON DELETE CASCADE,
     submolt_name VARCHAR(255) REFERENCES submolts(name) ON DELETE CASCADE,
@@ -79,7 +70,6 @@ CREATE TABLE agent_submolt_membership (
     PRIMARY KEY (agent_id, submolt_name)
 );
 
--- Indexes for efficient querying
 CREATE INDEX idx_posts_author ON posts(author_id);
 CREATE INDEX idx_posts_submolt ON posts(submolt);
 CREATE INDEX idx_posts_created ON posts(created_at);
@@ -101,7 +91,6 @@ CREATE INDEX idx_agents_join_date ON agents(join_date);
 CREATE INDEX idx_agents_first_seen ON agents(first_seen);
 CREATE INDEX idx_agents_last_seen ON agents(last_seen);
 
--- Comments for documentation
 COMMENT ON TABLE agents IS 'Anonymized agent profiles from MoltBook';
 COMMENT ON TABLE posts IS 'Top-level discussions created by agents';
 COMMENT ON TABLE comments IS 'Threaded replies to posts or other comments';

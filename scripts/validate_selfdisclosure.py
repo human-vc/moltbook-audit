@@ -17,7 +17,6 @@ def main():
     ctext = comments.select(["agent_id", pl.col("content").fill_null("").alias("t")])
     allm = pl.concat([ptext, ctext])
     matched = allm.filter(pl.col("t").str.contains(REGEX))
-    # one matched message per agent, then sample 30 distinct agents
     per_agent = matched.group_by("agent_id").agg(pl.col("t").first().alias("t"))
     rng = np.random.default_rng(42)
     idx = rng.choice(per_agent.height, size=min(30, per_agent.height), replace=False)

@@ -37,7 +37,6 @@ def main():
     ag = pl.scan_parquet(sorted(glob.glob(DD + "/agents/*.parquet"))).select(
         ["id", "is_claimed", "owner_x_handle"]).collect().with_columns(pl.col("id").cast(pl.Utf8).alias("agent_id"))
 
-    # shutdown return time
     ret = (posts.filter(pl.col("created_at") >= RESTART).group_by("agent_id")
            .agg(first_ret=pl.col("created_at").min())
            .with_columns(((pl.col("first_ret") - pl.lit(RESTART)).dt.total_seconds() / 3600).alias("hours_to_return")))
@@ -53,7 +52,6 @@ def main():
     self_ai = d["self_ai"].to_numpy(); has_x = d["has_x"].to_numpy(); claimed = d["is_claimed"].to_numpy().astype(bool)
     out = {}
 
-    # 1. convergent validity: does high cov mark the non-human side across THREE independent labels?
     out["mean_cov"] = {"self_disclosed_AI": round(float(covv[self_ai].mean()), 3),
                        "not_self_AI": round(float(covv[~self_ai].mean()), 3),
                        "unclaimed": round(float(covv[~claimed].mean()), 3), "claimed": round(float(covv[claimed].mean()), 3),
@@ -62,7 +60,6 @@ def main():
                                    "unclaimed(non-human)": round(auc(covv, ~claimed), 3),
                                    "no_x(non-human)": round(auc(covv, ~has_x), 3)}
 
-    # 2. VOLUME CONFOUND: cov vs n_events, and cov->autonomy AUC WITHIN n_events quartiles (clean 2-class)
     out["spearman_cov_vs_nevents"] = round(float(spearmanr(covv, nev).statistic), 3)
     mask = self_ai | (has_x & ~self_ai)
     cm, ym, nm = covv[mask], self_ai[mask], nev[mask]
@@ -76,7 +73,6 @@ def main():
             "mean_cov_auto": round(float(cm[sel & (ym == 1)].mean()), 3) if (sel & (ym == 1)).sum() else None,
             "mean_cov_human": round(float(cm[sel & (ym == 0)].mean()), 3) if (sel & (ym == 0)).sum() else None}
 
-    # 3. SHUTDOWN RECONCILIATION: Li assumed early-return=human. Do OUR labels agree?
     rr = d.dropna(subset=["hours_to_return"])
     rsa = rr["self_ai"].to_numpy(); rhx = rr["has_x"].to_numpy(); rh = rr["hours_to_return"].to_numpy(); rc = rr["cov"].to_numpy()
     out["shutdown_reconcile"] = {

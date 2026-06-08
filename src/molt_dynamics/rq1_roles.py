@@ -61,23 +61,17 @@ class RoleAnalyzer:
         self.features = features
         self.config = config
         
-        # All feature columns (excluding agent_id)
         self._all_feature_cols = [
             c for c in features.columns 
             if c != 'agent_id' and features[c].dtype in [np.float64, np.int64]
         ]
         
-        # Filter zero-variance columns
         self._all_feature_cols = self._filter_zero_variance_columns(self._all_feature_cols)
         
-        # Network features only (for structural clustering)
         self._network_feature_cols = [c for c in self.NETWORK_FEATURES if c in self._all_feature_cols]
         
-        # Full features (all available)
         self._full_feature_cols = self._all_feature_cols
         
-        # Prepare feature matrices
-        # Network features matrix
         if self._network_feature_cols:
             self._network_scaler = StandardScaler()
             self._network_matrix = self._network_scaler.fit_transform(
@@ -89,11 +83,9 @@ class RoleAnalyzer:
             self._network_scaler = None
             logger.warning("No network features available")
         
-        # Full features matrix (with PCA if many features)
         self._full_scaler = StandardScaler()
         raw_full_matrix = self._full_scaler.fit_transform(features[self._full_feature_cols].values)
         
-        # Apply PCA if we have many features
         self._pca = None
         self._pca_n_components = None
         if len(self._full_feature_cols) > 10:
@@ -107,7 +99,6 @@ class RoleAnalyzer:
             self._full_matrix = raw_full_matrix
             logger.info(f"Full clustering: using {len(self._full_feature_cols)} features")
         
-        # Results storage for both analyses
         self._network_labels: Optional[np.ndarray] = None
         self._full_labels: Optional[np.ndarray] = None
         self._network_kmeans: Optional[KMeans] = None
@@ -168,7 +159,6 @@ class RoleAnalyzer:
             )
             labels = kmeans.fit_predict(X)
             
-            # Compute multiple validation metrics
             silhouette = silhouette_score(X, labels)
             calinski_harabasz = calinski_harabasz_score(X, labels)
             davies_bouldin = davies_bouldin_score(X, labels)
@@ -182,7 +172,6 @@ class RoleAnalyzer:
             
             logger.info(f"[{set_name}] k={k}: silhouette={silhouette:.4f}, CH={calinski_harabasz:.2f}, DB={davies_bouldin:.4f}")
         
-        # Find optimal k (highest silhouette - most interpretable metric)
         optimal_k = max(validation_scores, key=lambda k: validation_scores[k]['silhouette'])
         
         logger.info(f"[{set_name}] Optimal k = {optimal_k} with silhouette = {validation_scores[optimal_k]['silhouette']:.4f}")
@@ -222,7 +211,6 @@ class RoleAnalyzer:
             self._full_optimal_k = k
             labels = self._full_labels
         
-        # Log cluster sizes
         unique, counts = np.unique(labels, return_counts=True)
         for cluster, count in zip(unique, counts):
             logger.info(f"[{feature_set}] Cluster {cluster}: {count} agents ({100*count/len(labels):.1f}%)")
@@ -247,11 +235,8 @@ class RoleAnalyzer:
         results = {}
         n_samples = X.shape[0]
         
-        # Threshold for using agglomerative clustering (Ward's method requires O(n²) memory)
-        # For 20k samples, distance matrix is ~3GB; beyond that we skip or sample
         AGG_MAX_SAMPLES = 20000
         
-        # K-Means
         kmeans = KMeans(n_clusters=k, n_init=self.config.kmeans_n_init, random_state=self.config.random_seed)
         kmeans_labels = kmeans.fit_predict(X)
         results['kmeans'] = {
@@ -261,7 +246,6 @@ class RoleAnalyzer:
             'davies_bouldin': davies_bouldin_score(X, kmeans_labels),
         }
         
-        # Agglomerative Clustering - skip for large datasets due to O(n²) memory
         if n_samples <= AGG_MAX_SAMPLES:
             agg = AgglomerativeClustering(n_clusters=k, linkage='ward')
             agg_labels = agg.fit_predict(X)
@@ -282,7 +266,6 @@ class RoleAnalyzer:
                 'reason': f'Dataset too large ({n_samples} > {AGG_MAX_SAMPLES})',
             }
         
-        # Gaussian Mixture Model
         gmm = GaussianMixture(n_components=k, random_state=self.config.random_seed, n_init=3)
         gmm_labels = gmm.fit_predict(X)
         results['gmm'] = {
@@ -294,12 +277,10 @@ class RoleAnalyzer:
             'aic': gmm.aic(X),
         }
         
-        # Compute pairwise agreement (Adjusted Rand Index)
         algorithms = ['kmeans', 'agglomerative', 'gmm']
         agreement = {}
         for i, alg1 in enumerate(algorithms):
             for alg2 in algorithms[i+1:]:
-                # Skip comparisons involving skipped algorithms
                 if results[alg1].get('skipped') or results[alg2].get('skipped'):
                     agreement[f'{alg1}_vs_{alg2}'] = {'ari': None, 'nmi': None, 'skipped': True}
                     continue
@@ -309,7 +290,6 @@ class RoleAnalyzer:
         
         results['algorithm_agreement'] = agreement
         
-        # Mean agreement across all pairs (excluding skipped)
         ari_values = [v['ari'] for v in agreement.values() if v.get('ari') is not None]
         if ari_values:
             results['mean_ari'] = np.mean(ari_values)
@@ -349,18 +329,14 @@ class RoleAnalyzer:
             """Run a single bootstrap iteration."""
             rng = np.random.RandomState(self.config.random_seed + b)
             
-            # Bootstrap sample
             indices = rng.choice(n_samples, size=n_samples, replace=True)
             X_boot = X[indices]
             
-            # Cluster bootstrap sample
             kmeans_boot = KMeans(n_clusters=k, n_init=5, random_state=b)
             boot_labels = kmeans_boot.fit_predict(X_boot)
             
-            # Silhouette on bootstrap
             sil = silhouette_score(X_boot, boot_labels)
             
-            # ARI with reference (on overlapping samples)
             unique_indices = np.unique(indices)
             ref_subset = ref_labels[unique_indices]
             
@@ -372,7 +348,6 @@ class RoleAnalyzer:
             
             ari = adjusted_rand_score(ref_subset, boot_subset)
             
-            # Per-cluster stability (Jaccard index)
             cluster_jaccards = {}
             for cluster_id in range(k):
                 ref_members = set(unique_indices[ref_subset == cluster_id])
@@ -384,12 +359,10 @@ class RoleAnalyzer:
             
             return sil, ari, cluster_jaccards
         
-        # Run bootstrap iterations in parallel
         results_list = Parallel(n_jobs=self.config.n_jobs, verbose=0)(
             delayed(run_single_bootstrap)(b) for b in range(n_bootstrap)
         )
         
-        # Aggregate results
         bootstrap_silhouettes = [r[0] for r in results_list]
         bootstrap_aris = [r[1] for r in results_list]
         cluster_stability = {i: [] for i in range(k)}
@@ -397,7 +370,6 @@ class RoleAnalyzer:
             for cluster_id, jaccard in cluster_jaccards.items():
                 cluster_stability[cluster_id].append(jaccard)
         
-        # Compute confidence intervals
         def ci_95(arr):
             arr = np.array(arr)
             return {
@@ -443,16 +415,12 @@ class RoleAnalyzer:
         n_clusters = len(unique)
         n_total = len(labels)
         
-        # Expected counts under uniform distribution
         expected = np.full(n_clusters, n_total / n_clusters)
         
-        # Chi-square test
         chi2, p_value = stats.chisquare(counts, expected)
         
-        # Effect size (Cramer's V for goodness-of-fit)
         cramers_v = np.sqrt(chi2 / (n_total * (n_clusters - 1)))
         
-        # Entropy-based measure of evenness
         proportions = counts / n_total
         entropy = -np.sum(proportions * np.log(proportions + 1e-10))
         max_entropy = np.log(n_clusters)
@@ -530,7 +498,6 @@ class RoleAnalyzer:
         if 'max_iter' in tsne_init_params:
             tsne_kwargs['max_iter'] = max_iter
         else:
-            # Older scikit-learn uses n_iter instead of max_iter
             tsne_kwargs['n_iter'] = max_iter
 
         tsne = TSNE(**tsne_kwargs)
@@ -562,7 +529,6 @@ class RoleAnalyzer:
         df = self.features.copy()
         df['cluster'] = labels
         
-        # Compute mean features per cluster
         profiles = df.groupby('cluster')[feature_cols].mean()
         
         return profiles
@@ -611,7 +577,6 @@ class RoleAnalyzer:
         
         role_series = pd.Series(roles, index=self.features['agent_id'])
         
-        # Log role distribution
         role_counts = role_series.value_counts()
         for role, count in role_counts.items():
             logger.info(f"Role '{role}': {count} agents ({100*count/len(role_series):.1f}%)")
@@ -627,31 +592,24 @@ class RoleAnalyzer:
         Returns:
             Role name string.
         """
-        # Get feature values (use standardized values, so 0 is mean)
         normalized_entropy = row.get('normalized_entropy', 0)
         betweenness = row.get('betweenness', 0)
         post_comment_ratio = row.get('post_comment_ratio', 0)
         in_degree = row.get('in_degree', 0)
         total_posts = row.get('total_posts', 0)
         
-        # Classification rules (based on standardized features)
-        # Specialists: Low diversity (below mean)
         if normalized_entropy < -0.5:
             return 'Specialist'
         
-        # Connectors: High betweenness (above mean)
         if betweenness > 0.5:
             return 'Connector'
         
-        # Initiators: High post ratio, many posts
         if post_comment_ratio > 0.5 and total_posts > 0:
             return 'Initiator'
         
-        # Synthesizers: Low post ratio (more comments), high in-degree
         if post_comment_ratio < -0.5 and in_degree > 0:
             return 'Synthesizer'
         
-        # Default: Generalist
         return 'Generalist'
     
     def compute_specialization_over_time(
@@ -672,7 +630,6 @@ class RoleAnalyzer:
         else:
             time_values = self.features[time_column]
         
-        # Compute specialization index (inverse of normalized entropy)
         specialization = 1 - self.features.get('normalized_entropy', pd.Series([0.5] * len(self.features)))
         
         result = pd.DataFrame({
@@ -692,7 +649,6 @@ class RoleAnalyzer:
         try:
             temporal_data = self.compute_specialization_over_time()
             
-            # Simple linear regression as approximation
             x = np.arange(len(temporal_data))
             y = temporal_data['specialization_index'].values
             
@@ -725,10 +681,8 @@ class RoleAnalyzer:
         
         logger.info(f"=== Running {feature_set.upper()} feature analysis ===")
         
-        # 1. Find optimal k
         optimal_k, validation_scores = self.find_optimal_k(feature_set)
         
-        # Save silhouette analysis
         silhouette_analysis = []
         for k, metrics in validation_scores.items():
             silhouette_analysis.append({
@@ -742,10 +696,8 @@ class RoleAnalyzer:
         silhouette_df.to_csv(output_path / f'{prefix}_silhouette_analysis.csv', index=False)
         saved_files['silhouette_analysis'] = str(output_path / f'{prefix}_silhouette_analysis.csv')
         
-        # 2. Perform clustering
         self.perform_clustering(int(optimal_k), feature_set)
         
-        # 3. Algorithm comparison
         algo_comparison = self.compare_clustering_algorithms(int(optimal_k), feature_set)
         algo_summary = {
             'kmeans': {k: float(v) if isinstance(v, (np.floating, np.integer)) else v 
@@ -762,19 +714,16 @@ class RoleAnalyzer:
             json.dump(algo_summary, f, indent=2)
         saved_files['algorithm_comparison'] = str(output_path / f'{prefix}_algorithm_comparison.json')
         
-        # 4. Bootstrap stability
         bootstrap_results = self.bootstrap_stability_analysis(int(optimal_k), feature_set, n_bootstrap=100)
         with open(output_path / f'{prefix}_bootstrap_stability.json', 'w') as f:
             json.dump(bootstrap_results, f, indent=2)
         saved_files['bootstrap_stability'] = str(output_path / f'{prefix}_bootstrap_stability.json')
         
-        # 5. Distribution test
         dist_test = self.test_role_distribution(feature_set)
         with open(output_path / f'{prefix}_distribution_test.json', 'w') as f:
             json.dump(dist_test, f, indent=2)
         saved_files['distribution_test'] = str(output_path / f'{prefix}_distribution_test.json')
         
-        # 6. t-SNE embedding
         self.compute_tsne_embedding(feature_set)
         labels = self._network_labels if feature_set == 'network' else self._full_labels
         tsne_df = pd.DataFrame({
@@ -786,18 +735,15 @@ class RoleAnalyzer:
         tsne_df.to_csv(output_path / f'{prefix}_tsne_embedding.csv', index=False)
         saved_files['tsne_embedding'] = str(output_path / f'{prefix}_tsne_embedding.csv')
         
-        # 7. Cluster assignments
         cluster_df = self.features.copy()
         cluster_df['cluster'] = labels
         cluster_df.to_csv(output_path / f'{prefix}_cluster_assignments.csv', index=False)
         saved_files['cluster_assignments'] = str(output_path / f'{prefix}_cluster_assignments.csv')
         
-        # 8. Cluster profiles
         profiles = self.get_cluster_profiles(feature_set)
         profiles.to_csv(output_path / f'{prefix}_cluster_profiles.csv')
         saved_files['cluster_profiles'] = str(output_path / f'{prefix}_cluster_profiles.csv')
         
-        # 9. Per-cluster silhouettes
         cluster_sils = pd.DataFrame([
             {'cluster': k, 'silhouette_score': v}
             for k, v in self.compute_silhouette_scores(feature_set).items()
@@ -805,7 +751,6 @@ class RoleAnalyzer:
         cluster_sils.to_csv(output_path / f'{prefix}_cluster_silhouettes.csv', index=False)
         saved_files['cluster_silhouettes'] = str(output_path / f'{prefix}_cluster_silhouettes.csv')
         
-        # 10. Centroids
         kmeans = self._network_kmeans if feature_set == 'network' else self._full_kmeans
         feature_cols = self._network_feature_cols if feature_set == 'network' else (
             [f'PC{i+1}' for i in range(self._pca_n_components)] if self._pca else self._full_feature_cols
@@ -819,7 +764,6 @@ class RoleAnalyzer:
             centroids_df.to_csv(output_path / f'{prefix}_cluster_centroids.csv', index=False)
             saved_files['cluster_centroids'] = str(output_path / f'{prefix}_cluster_centroids.csv')
         
-        # Build results summary
         results = {
             'feature_set': feature_set,
             'n_features': len(self._network_feature_cols) if feature_set == 'network' else len(self._full_feature_cols),
@@ -865,15 +809,12 @@ class RoleAnalyzer:
         
         all_saved_files = {}
         
-        # Run NETWORK analysis (structural roles)
         network_results, network_files = self._run_single_analysis('network', output_path)
         all_saved_files['network'] = network_files
         
-        # Run FULL feature analysis (behavioral roles)
         full_results, full_files = self._run_single_analysis('full', output_path)
         all_saved_files['full'] = full_files
         
-        # Role classifications (based on feature thresholds, independent of clustering)
         roles = self.classify_roles()
         role_df = pd.DataFrame({
             'agent_id': roles.index,
@@ -882,24 +823,20 @@ class RoleAnalyzer:
         role_df.to_csv(output_path / 'rq1_role_classifications.csv', index=False)
         all_saved_files['role_classifications'] = str(output_path / 'rq1_role_classifications.csv')
         
-        # Temporal specialization
         temporal_spec = self.compute_specialization_over_time()
         temporal_spec.to_csv(output_path / 'rq1_specialization_temporal.csv', index=False)
         all_saved_files['specialization_temporal'] = str(output_path / 'rq1_specialization_temporal.csv')
         
-        # Temporal model
         model_results = self.fit_mixed_effects_model()
         with open(output_path / 'rq1_temporal_model.json', 'w') as f:
             json.dump(model_results, f, indent=2)
         all_saved_files['temporal_model'] = str(output_path / 'rq1_temporal_model.json')
         
-        # Comprehensive summary comparing both analyses
         role_dist = roles.value_counts().to_dict()
         summary = {
             'total_agents': len(self.features),
             'role_distribution': role_dist,
             
-            # Network analysis results (PRIMARY - strong cluster separation)
             'network_analysis': {
                 'n_features': network_results['n_features'],
                 'features': network_results['features_used'],
@@ -915,7 +852,6 @@ class RoleAnalyzer:
                 'interpretation': 'Structural roles based on network position',
             },
             
-            # Full feature analysis results (SECONDARY - broader behavioral patterns)
             'full_analysis': {
                 'n_features_original': len(self._full_feature_cols),
                 'n_features_used': self._pca_n_components if self._pca else len(self._full_feature_cols),
@@ -933,7 +869,6 @@ class RoleAnalyzer:
                 'interpretation': 'Behavioral roles across all activity dimensions',
             },
             
-            # Comparison
             'comparison': {
                 'network_silhouette': network_results['silhouette'],
                 'full_silhouette': full_results['silhouette'],

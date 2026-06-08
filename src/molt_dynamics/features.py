@@ -64,13 +64,11 @@ class FeatureExtractor:
         total_posts = len(posts)
         total_comments = len(comments)
         
-        # Post-comment ratio (avoid division by zero)
         if total_comments > 0:
             post_comment_ratio = total_posts / total_comments
         else:
             post_comment_ratio = float(total_posts) if total_posts > 0 else 0.0
         
-        # Active lifespan
         timestamps = []
         for post in posts:
             if post.created_at:
@@ -84,7 +82,6 @@ class FeatureExtractor:
         else:
             active_lifespan = 0.0
         
-        # Posts per day
         if active_lifespan > 0:
             posts_per_day = total_posts / active_lifespan
         else:
@@ -112,7 +109,6 @@ class FeatureExtractor:
         if not posts:
             return 0.0, 0.0
         
-        # Count posts per submolt
         submolt_counts = Counter(post.submolt for post in posts if post.submolt)
         
         if not submolt_counts:
@@ -120,14 +116,12 @@ class FeatureExtractor:
         
         total = sum(submolt_counts.values())
         
-        # Compute Shannon entropy: H = -Σ(p * log2(p))
         entropy = 0.0
         for count in submolt_counts.values():
             p = count / total
             if p > 0:
                 entropy -= p * math.log2(p)
         
-        # Normalized entropy (0 to 1)
         max_entropy = math.log2(len(submolt_counts)) if len(submolt_counts) > 1 else 1.0
         normalized = entropy / max_entropy if max_entropy > 0 else 0.0
         
@@ -144,7 +138,6 @@ class FeatureExtractor:
             Dict with in_degree, out_degree, betweenness, 
             clustering_coefficient, pagerank.
         """
-        # Check if agent is in network
         if agent_id not in self.network:
             return {
                 'in_degree': 0,
@@ -154,22 +147,18 @@ class FeatureExtractor:
                 'pagerank': 0.0,
             }
         
-        # Degree centrality
         in_degree = self.network.in_degree(agent_id)
         out_degree = self.network.out_degree(agent_id)
         
-        # Betweenness centrality (cached for efficiency)
         if self._betweenness_cache is None:
             self._betweenness_cache = nx.betweenness_centrality(self.network)
         betweenness = self._betweenness_cache.get(agent_id, 0.0)
         
-        # Clustering coefficient (on undirected version)
         if self._clustering_cache is None:
             undirected = self.network.to_undirected()
             self._clustering_cache = nx.clustering(undirected)
         clustering = self._clustering_cache.get(agent_id, 0.0)
         
-        # PageRank
         if self._pagerank_cache is None:
             self._pagerank_cache = nx.pagerank(
                 self.network, 
@@ -197,7 +186,6 @@ class FeatureExtractor:
         posts = self.storage.get_posts(filters={'author_id': agent_id})
         comments = self.storage.get_comments(filters={'author_id': agent_id})
         
-        # Collect all timestamps
         timestamps = []
         for post in posts:
             if post.created_at:
@@ -213,19 +201,16 @@ class FeatureExtractor:
                 'burst_coefficient': 0.0,
             }
         
-        # Hour distribution (24-dimensional)
         hour_counts = np.zeros(24)
         for ts in timestamps:
             hour_counts[ts.hour] += 1
         
-        # Normalize to probability distribution
         total = hour_counts.sum()
         if total > 0:
             hour_distribution = hour_counts / total
         else:
             hour_distribution = hour_counts
         
-        # Autocorrelation of inter-event times
         autocorrelation = 0.0
         if len(timestamps) >= 3:
             timestamps_sorted = sorted(timestamps)
@@ -238,7 +223,6 @@ class FeatureExtractor:
                 if np.isnan(autocorrelation):
                     autocorrelation = 0.0
         
-        # Burst coefficient (coefficient of variation of inter-event times)
         burst_coefficient = 0.0
         if len(timestamps) >= 2:
             timestamps_sorted = sorted(timestamps)
@@ -270,7 +254,6 @@ class FeatureExtractor:
         posts = self.storage.get_posts(filters={'author_id': agent_id})
         comments = self.storage.get_comments(filters={'author_id': agent_id})
         
-        # Collect all text content
         texts = []
         for post in posts:
             if post.body:
@@ -289,10 +272,8 @@ class FeatureExtractor:
                 'technical_density': 0.0,
             }
         
-        # Average post length
         avg_length = np.mean([len(t) for t in texts])
         
-        # Vocabulary diversity (Type-Token Ratio)
         all_words = ' '.join(texts).lower().split()
         if all_words:
             unique_words = set(all_words)
@@ -300,7 +281,6 @@ class FeatureExtractor:
         else:
             vocabulary_diversity = 0.0
         
-        # Sentiment analysis using VADER
         try:
             from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
             analyzer = SentimentIntensityAnalyzer()
@@ -310,7 +290,6 @@ class FeatureExtractor:
             logger.warning("vaderSentiment not available, using neutral sentiment")
             avg_sentiment = 0.0
         
-        # Technical density (ratio of technical terms)
         technical_keywords = {
             'function', 'class', 'method', 'variable', 'parameter', 'return',
             'import', 'module', 'package', 'library', 'api', 'endpoint',
@@ -349,7 +328,6 @@ class FeatureExtractor:
             logger.warning("No agents found in database")
             return pd.DataFrame()
         
-        # Pre-compute network metrics once (these are already cached but let's be explicit)
         logger.info("Pre-computing network centrality metrics...")
         if self._pagerank_cache is None:
             self._pagerank_cache = nx.pagerank(
@@ -371,18 +349,15 @@ class FeatureExtractor:
             
             agent_id = agent.agent_id
             
-            # Fetch posts and comments ONCE per agent
             posts = self.storage.get_posts(filters={'author_id': agent_id})
             comments = self.storage.get_comments(filters={'author_id': agent_id})
             
-            # Compute all features using pre-fetched data
             activity = self._compute_activity_from_data(posts, comments)
             topic_entropy, normalized_entropy = self._compute_topic_diversity_from_data(posts)
             centrality = self._compute_centrality_from_cache(agent_id)
             temporal = self._compute_temporal_from_data(posts, comments)
             content = self._compute_content_from_data(posts, comments)
             
-            # Combine into single dict
             features = {
                 'agent_id': agent_id,
                 **activity,
@@ -394,7 +369,6 @@ class FeatureExtractor:
                 **content,
             }
             
-            # Add hour distribution as separate columns
             for i, val in enumerate(temporal['hour_distribution']):
                 features[f'hour_{i}'] = val
             
@@ -569,7 +543,6 @@ class FeatureExtractor:
         else:
             vocabulary_diversity = 0.0
         
-        # Sentiment analysis - initialize analyzer once
         if not hasattr(self, '_sentiment_analyzer'):
             try:
                 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
@@ -625,18 +598,15 @@ class FeatureExtractor:
         if exclude_cols is None:
             exclude_cols = ['agent_id']
         
-        # Identify numeric columns to standardize
         numeric_cols = df.select_dtypes(include=[np.number]).columns.tolist()
         cols_to_standardize = [c for c in numeric_cols if c not in exclude_cols]
         
         if not cols_to_standardize:
             return df.copy()
         
-        # Create copy and standardize
         df_std = df.copy()
         scaler = StandardScaler()
         
-        # Handle constant columns (std=0)
         valid_cols = []
         for col in cols_to_standardize:
             if df[col].std() > 0:
@@ -688,10 +658,8 @@ class TopicModeler:
             logger.warning("No documents provided for topic modeling")
             return
         
-        # Vectorize documents
         doc_term_matrix = self.vectorizer.fit_transform(documents)
         
-        # Fit LDA
         self.lda.fit(doc_term_matrix)
         self._fitted = True
         
@@ -735,7 +703,6 @@ class TopicModeler:
         posts = storage.get_posts(filters={'author_id': agent_id})
         comments = storage.get_comments(filters={'author_id': agent_id})
         
-        # Combine all text
         texts = []
         for post in posts:
             text_parts = []
@@ -753,7 +720,6 @@ class TopicModeler:
         if not texts:
             return np.zeros(self.n_topics)
         
-        # Get topic distributions and average
         distributions = self.transform(texts)
         return distributions.mean(axis=0)
     
@@ -788,13 +754,11 @@ def compute_shannon_entropy(distribution: np.ndarray) -> float:
     Returns:
         Shannon entropy in bits.
     """
-    # Filter out zero probabilities
     p = distribution[distribution > 0]
     
     if len(p) == 0:
         return 0.0
     
-    # H = -Σ(p * log2(p))
     return -np.sum(p * np.log2(p))
 
 

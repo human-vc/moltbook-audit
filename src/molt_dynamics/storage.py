@@ -66,7 +66,6 @@ class JSONStorage:
         self.config = config
         self.data_dir = Path(config.output_dir) / "data"
         
-        # In-memory data stores
         self._agents: dict[str, dict] = {}
         self._posts: dict[str, dict] = {}
         self._comments: dict[str, dict] = {}
@@ -74,7 +73,6 @@ class JSONStorage:
         self._submolts: dict[str, dict] = {}
         self._memberships: dict[str, dict] = {}
         
-        # Indexes for fast lookups
         self._posts_by_author: dict[str, list[str]] = {}
         self._comments_by_author: dict[str, list[str]] = {}
     
@@ -98,7 +96,6 @@ class JSONStorage:
         self._submolts = self._load_json("submolts.json", {})
         self._memberships = self._load_json("memberships.json", {})
         
-        # Build indexes for fast author lookups
         self._build_author_indexes()
     
     def _save_all(self) -> None:
@@ -149,7 +146,6 @@ class JSONStorage:
         try:
             with open(temp_filepath, 'w', encoding='utf-8') as f:
                 json.dump(data, f, cls=DateTimeEncoder, indent=2)
-            # Atomic rename - if this fails, original file is intact
             temp_filepath.replace(filepath)
         except IOError as e:
             logger.error(f"Failed to save {filename}: {e}")
@@ -160,7 +156,6 @@ class JSONStorage:
         """Initialize empty data structures (no-op for JSON storage)."""
         logger.info("JSON storage schema initialized (in-memory)")
     
-    # ==================== Agent Operations ====================
     
     def insert_agent(self, agent: Agent) -> str:
         """Insert or update an agent record.
@@ -199,7 +194,6 @@ class JSONStorage:
         agents = []
         
         for data in self._agents.values():
-            # Apply filters
             if filters:
                 if "min_posts" in filters and data.get("post_count", 0) < filters["min_posts"]:
                     continue
@@ -237,10 +231,8 @@ class JSONStorage:
         Returns:
             Agent object or None if not found.
         """
-        # Try direct lookup first (for anonymized IDs)
         data = self._agents.get(agent_id)
         
-        # If not found, try anonymizing the ID
         if not data:
             anon_id = anonymize_agent_id(agent_id)
             data = self._agents.get(anon_id)
@@ -261,7 +253,6 @@ class JSONStorage:
         )
 
     
-    # ==================== Post Operations ====================
     
     def insert_post(self, post: Post) -> str:
         """Insert or update a post record.
@@ -272,10 +263,8 @@ class JSONStorage:
         Returns:
             Post ID.
         """
-        # Anonymize author ID
         anon_author_id = anonymize_agent_id(post.author_id)
         
-        # Ensure submolt exists
         if post.submolt:
             self._ensure_submolt(post.submolt)
         
@@ -291,14 +280,12 @@ class JSONStorage:
             'scraped_at': (post.scraped_at or datetime.now()).isoformat(),
         }
         
-        # Update author index for fast lookups
         if anon_author_id:
             if anon_author_id not in self._posts_by_author:
                 self._posts_by_author[anon_author_id] = []
             if post.post_id not in self._posts_by_author[anon_author_id]:
                 self._posts_by_author[anon_author_id].append(post.post_id)
         
-        # Update agent-submolt membership
         if post.submolt and anon_author_id:
             self._update_membership(anon_author_id, post.submolt, post.created_at)
         
@@ -315,7 +302,6 @@ class JSONStorage:
         """
         posts = []
         
-        # Use author index for fast lookup if filtering by author_id only
         if filters and "author_id" in filters and len(filters) == 1:
             author_id = filters["author_id"]
             post_ids = self._posts_by_author.get(author_id, [])
@@ -337,7 +323,6 @@ class JSONStorage:
             return posts
         
         for data in self._posts.values():
-            # Apply filters
             if filters:
                 if "submolt" in filters and data.get("submolt") != filters["submolt"]:
                     continue
@@ -364,11 +349,9 @@ class JSONStorage:
                 scraped_at=parse_datetime(data.get('scraped_at')),
             ))
         
-        # Sort by created_at
         posts.sort(key=lambda p: p.created_at or datetime.min)
         return posts
     
-    # ==================== Comment Operations ====================
     
     def insert_comment(self, comment: Comment) -> str:
         """Insert or update a comment record.
@@ -379,7 +362,6 @@ class JSONStorage:
         Returns:
             Comment ID.
         """
-        # Anonymize author ID
         anon_author_id = anonymize_agent_id(comment.author_id)
         
         self._comments[comment.comment_id] = {
@@ -394,7 +376,6 @@ class JSONStorage:
             'scraped_at': (comment.scraped_at or datetime.now()).isoformat(),
         }
         
-        # Update author index for fast lookups
         if anon_author_id:
             if anon_author_id not in self._comments_by_author:
                 self._comments_by_author[anon_author_id] = []
@@ -414,7 +395,6 @@ class JSONStorage:
         """
         comments = []
         
-        # Use author index for fast lookup if filtering by author_id only
         if filters and "author_id" in filters and len(filters) == 1:
             author_id = filters["author_id"]
             comment_ids = self._comments_by_author.get(author_id, [])
@@ -436,7 +416,6 @@ class JSONStorage:
             return comments
         
         for data in self._comments.values():
-            # Apply filters
             if filters:
                 if "post_id" in filters and data.get("post_id") != filters["post_id"]:
                     continue
@@ -459,11 +438,9 @@ class JSONStorage:
                 scraped_at=parse_datetime(data.get('scraped_at')),
             ))
         
-        # Sort by created_at
         comments.sort(key=lambda c: c.created_at or datetime.min)
         return comments
     
-    # ==================== Interaction Operations ====================
     
     def insert_interaction(self, interaction: Interaction) -> None:
         """Insert an interaction record.
@@ -497,7 +474,6 @@ class JSONStorage:
         for data in self._interactions:
             timestamp = parse_datetime(data.get('timestamp'))
             
-            # Apply time range filter
             if time_range:
                 if timestamp:
                     if timestamp < time_range[0] or timestamp > time_range[1]:
@@ -512,7 +488,6 @@ class JSONStorage:
                 timestamp=timestamp,
             ))
         
-        # Sort by timestamp
         interactions.sort(key=lambda i: i.timestamp or datetime.min)
         return interactions
     
@@ -549,7 +524,6 @@ class JSONStorage:
         ])
 
     
-    # ==================== Submolt Operations ====================
     
     def _ensure_submolt(self, name: str) -> None:
         """Ensure a submolt exists in storage."""
@@ -588,11 +562,9 @@ class JSONStorage:
                 created_at=parse_datetime(data.get('created_at')),
             ))
         
-        # Sort by post_count descending
         submolts.sort(key=lambda s: s.post_count or 0, reverse=True)
         return submolts
     
-    # ==================== Membership Operations ====================
     
     def _update_membership(
         self, 
@@ -636,7 +608,6 @@ class JSONStorage:
             for m in self._memberships.values()
         ]).sort_values(['agent_id', 'submolt_name'])
     
-    # ==================== Utility Methods ====================
     
     def get_post_author(self, post_id: str) -> Optional[str]:
         """Get the author ID of a post."""
@@ -677,5 +648,4 @@ class JSONStorage:
         }
 
 
-# Alias for backward compatibility
 Database = JSONStorage

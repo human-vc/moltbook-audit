@@ -39,11 +39,9 @@ class TestCascadeMinimumAdopterThreshold:
     @settings(max_examples=20, suppress_health_check=[HealthCheck.too_slow], deadline=None)
     def test_all_cascades_meet_threshold(self, min_adopters: int):
         """All identified cascades should have >= min_adopters unique adopters."""
-        # Create mock database with posts containing repeated phrases
         db = MagicMock()
         config = Config()
         
-        # Create posts with a common phrase used by many agents
         posts = []
         for i in range(min_adopters + 5):
             posts.append(Post(
@@ -61,7 +59,6 @@ class TestCascadeMinimumAdopterThreshold:
         identifier = CascadeIdentifier(db, config)
         cascades = identifier.identify_meme_cascades(min_adopters=min_adopters)
         
-        # All cascades should meet the threshold
         for cascade in cascades:
             unique_adopters = set(a[0] for a in cascade.adoptions)
             assert len(unique_adopters) >= min_adopters, (
@@ -74,7 +71,6 @@ class TestCascadeMinimumAdopterThreshold:
         db = MagicMock()
         config = Config()
         
-        # Create posts with a phrase used by only 3 agents
         posts = [
             Post(
                 post_id=f'post_{i}',
@@ -93,7 +89,6 @@ class TestCascadeMinimumAdopterThreshold:
         identifier = CascadeIdentifier(db, config)
         cascades = identifier.identify_meme_cascades(min_adopters=5)
         
-        # Should find no cascades with the rare phrase
         rare_cascades = [c for c in cascades if 'rare phrase' in c.content_hash]
         assert len(rare_cascades) == 0
 
@@ -111,7 +106,6 @@ class TestCascadeAdoptionOrdering:
     @settings(max_examples=30)
     def test_adoptions_chronologically_ordered(self, n_adoptions: int):
         """Cascade adoptions should be in chronological order."""
-        # Create a cascade with random timestamps, then sort
         base_time = datetime(2026, 1, 1)
         
         adoptions = [
@@ -128,15 +122,13 @@ class TestCascadeAdoptionOrdering:
             content_hash='test',
         )
         
-        # Verify ordering
         assert verify_cascade_ordering(cascade), "Adoptions should be ordered"
     
     def test_verify_ordering_detects_violations(self):
         """verify_cascade_ordering should detect out-of-order adoptions."""
-        # Create cascade with out-of-order timestamps
         adoptions = [
             ('agent_1', datetime(2026, 1, 1, 12, 0)),
-            ('agent_2', datetime(2026, 1, 1, 10, 0)),  # Earlier than previous!
+            ('agent_2', datetime(2026, 1, 1, 10, 0)),
             ('agent_3', datetime(2026, 1, 1, 14, 0)),
         ]
         
@@ -190,7 +182,6 @@ class TestContagionTypeClassification:
         """Contagion type should be 'simple', 'complex', or 'unknown'."""
         import networkx as nx
         
-        # Create simple cascades and network
         cascades = [
             Cascade(
                 cascade_id=f'cascade_{i}',

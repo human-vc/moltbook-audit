@@ -92,16 +92,12 @@ def run_rq1_analysis(features_std, config: Config) -> dict:
     
     analyzer = RoleAnalyzer(features_std, config)
     
-    # Find optimal k
     optimal_k, silhouette_scores = analyzer.find_optimal_k()
     
-    # Perform clustering
     labels = analyzer.perform_clustering(optimal_k)
     
-    # Classify roles
     roles = analyzer.classify_roles()
     
-    # Save all data instead of just generating visualization
     saved_files = analyzer.save_all_data(config.output_dir)
     
     return {
@@ -118,10 +114,8 @@ def run_rq2_analysis(storage: JSONStorage, network, config: Config) -> dict:
     
     from .rq2_diffusion import save_rq2_data
     
-    # Save all RQ2 data
     saved_files = save_rq2_data(storage, network, config, config.output_dir)
     
-    # Load summary for return value
     import json
     with open(f"{config.output_dir}/rq2_summary.json", 'r') as f:
         summary = json.load(f)
@@ -138,10 +132,8 @@ def run_rq3_analysis(storage: JSONStorage, network, config: Config) -> dict:
     
     from .rq3_collaboration import save_rq3_data
     
-    # Save all RQ3 data
     saved_files = save_rq3_data(storage, network, config, config.output_dir)
     
-    # Load summary for return value
     import json
     with open(f"{config.output_dir}/rq3_summary.json", 'r') as f:
         summary = json.load(f)
@@ -158,7 +150,6 @@ def run_validation(storage: JSONStorage, features, config: Config) -> dict:
     
     checker = RobustnessChecker(storage, config)
     
-    # Clustering robustness
     clustering_robustness = checker.verify_clustering_robustness(features)
     
     return {
@@ -172,14 +163,11 @@ def generate_outputs(config: Config, storage: JSONStorage, results: dict) -> Non
     
     generator = OutputGenerator(config)
     
-    # Export de-identified dataset
     generator.export_deidentified_dataset(storage)
     
-    # Generate README
     readme = generator.generate_readme()
     (Path(config.output_dir) / 'README.md').write_text(readme)
     
-    # Generate data dictionary
     dictionary = generator.generate_data_dictionary()
     (Path(config.output_dir) / 'DATA_DICTIONARY.md').write_text(dictionary)
     
@@ -200,10 +188,8 @@ def main():
     
     args = parser.parse_args()
     
-    # Load configuration
     config = Config.from_yaml(args.config)
     
-    # Setup
     setup_logging(config)
     set_random_seeds(config.random_seed)
     
@@ -211,25 +197,20 @@ def main():
     logger.info("Molt Dynamics Analysis Pipeline")
     logger.info("=" * 60)
     
-    # Initialize JSON storage
     storage = JSONStorage(config)
     storage.connect()
     
     try:
-        # Data loading
         if not args.skip_loading:
             run_data_loading(config, storage, args.dataset_path)
         
-        # Build networks
         builder, network = run_network_analysis(storage)
         
-        # Extract features
         features, features_std = run_feature_extraction(storage, network, config)
         
         results = {}
         rqs = args.rq if 'all' not in args.rq else ['1', '2', '3']
         
-        # Run analyses
         if '1' in rqs:
             results['rq1'] = run_rq1_analysis(features_std, config)
         
@@ -239,10 +220,8 @@ def main():
         if '3' in rqs:
             results['rq3'] = run_rq3_analysis(storage, network, config)
         
-        # Validation
         results['validation'] = run_validation(storage, features, config)
         
-        # Generate outputs
         generate_outputs(config, storage, results)
         
         logger.info("=" * 60)

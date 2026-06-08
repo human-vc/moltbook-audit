@@ -117,7 +117,6 @@ class StatisticalFramework:
         if m == 0:
             return []
         
-        # Bonferroni: multiply p-values by number of tests
         corrected = [min(p * m, 1.0) for p in p_values]
         return corrected
 
@@ -143,7 +142,6 @@ class RobustnessChecker:
         Returns:
             Dict with stability metrics.
         """
-        # Get time range from data
         interactions = self.storage.get_interactions()
         if not interactions:
             return {'result': 'no_data'}
@@ -160,7 +158,6 @@ class RobustnessChecker:
             start = min_time + i * period_length
             end = start + period_length
             
-            # Filter data for this period
             period_interactions = [
                 inter for inter in interactions
                 if inter.timestamp and start <= inter.timestamp < end
@@ -170,7 +167,6 @@ class RobustnessChecker:
                 result = analysis_func(period_interactions)
                 results.append(result)
         
-        # Compute stability metrics
         if len(results) < 2:
             return {'result': 'insufficient_periods'}
         
@@ -222,18 +218,15 @@ class RobustnessChecker:
         Returns:
             Randomized network with same degree sequence.
         """
-        # Get degree sequences
         in_degrees = [d for _, d in network.in_degree()]
         out_degrees = [d for _, d in network.out_degree()]
         
-        # Generate configuration model
         null_network = nx.directed_configuration_model(
             in_degrees, 
             out_degrees,
             seed=self.config.random_seed
         )
         
-        # Remove self-loops and multi-edges
         null_network = nx.DiGraph(null_network)
         null_network.remove_edges_from(nx.selfloop_edges(null_network))
         
@@ -256,7 +249,6 @@ class RobustnessChecker:
             for i in interactions
         ])
         
-        # Shuffle timestamps
         df['timestamp'] = np.random.permutation(df['timestamp'].values)
         
         return df
@@ -269,7 +261,6 @@ class RobustnessChecker:
         """
         interactions = self.storage.get_interactions()
         
-        # Compute mean rate
         if not interactions:
             return pd.DataFrame()
         
@@ -280,7 +271,6 @@ class RobustnessChecker:
         duration = (max(timestamps) - min(timestamps)).total_seconds() / 3600
         rate = len(interactions) / duration if duration > 0 else 1
         
-        # Generate Poisson events
         n_events = np.random.poisson(rate * duration)
         
         return pd.DataFrame({
@@ -303,19 +293,16 @@ class RobustnessChecker:
         Returns:
             Dict with comparison statistics.
         """
-        # Generate null distribution
         null_values = []
         
         for _ in range(100):
             if null_type == 'configuration':
-                # Would need network to generate null
                 null_values.append(np.random.normal(0, 1))
             elif null_type == 'shuffled':
                 null_values.append(np.random.normal(0, 1))
             elif null_type == 'poisson':
                 null_values.append(np.random.poisson(5))
         
-        # Compute p-value
         observed_value = observed.get('value', 0)
         p_value = np.mean([n >= observed_value for n in null_values])
         
@@ -342,19 +329,15 @@ class RobustnessChecker:
         if len(X) < 10:
             return {'result': 'insufficient_data'}
         
-        # K-means
         kmeans = KMeans(n_clusters=5, random_state=self.config.random_seed)
         kmeans_labels = kmeans.fit_predict(X)
         
-        # Hierarchical
         hierarchical = AgglomerativeClustering(n_clusters=5)
         hier_labels = hierarchical.fit_predict(X)
         
-        # DBSCAN
         dbscan = DBSCAN(eps=0.5, min_samples=5)
         dbscan_labels = dbscan.fit_predict(X)
         
-        # Compute adjusted Rand indices
         return {
             'kmeans_vs_hierarchical': adjusted_rand_score(kmeans_labels, hier_labels),
             'kmeans_vs_dbscan': adjusted_rand_score(kmeans_labels, dbscan_labels),

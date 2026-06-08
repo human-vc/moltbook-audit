@@ -45,7 +45,6 @@ class NetworkBuilder:
         Returns:
             NetworkX graph with agents as nodes and replies as weighted edges.
         """
-        # Get interactions from storage
         if until_time:
             interactions = self.storage.get_interactions(
                 time_range=(datetime.min, until_time)
@@ -53,7 +52,6 @@ class NetworkBuilder:
         else:
             interactions = self.storage.get_interactions()
         
-        # Count interactions between agent pairs
         edge_counts: dict[tuple[str, str], int] = defaultdict(int)
         
         for interaction in interactions:
@@ -61,23 +59,19 @@ class NetworkBuilder:
             target = interaction.target_agent_id
             edge_counts[(source, target)] += 1
         
-        # If no interactions, build co-posting network from posts
         if not edge_counts:
             logger.info("No comment-based interactions found, building co-posting network")
             return self._build_coposting_network(until_time, directed)
         
-        # Build graph
         if directed:
             G = nx.DiGraph()
         else:
             G = nx.Graph()
         
-        # Add edges with weights
         for (source, target), weight in edge_counts.items():
             if directed:
                 G.add_edge(source, target, weight=weight)
             else:
-                # For undirected, sum bidirectional weights
                 if G.has_edge(source, target):
                     G[source][target]['weight'] += weight
                 else:
@@ -114,11 +108,9 @@ class NetworkBuilder:
         """
         posts = self.storage.get_posts()
         
-        # Filter by time if specified
         if until_time:
             posts = [p for p in posts if p.created_at and p.created_at <= until_time]
         
-        # Group posts by submolt
         submolt_agents: dict[str, list[tuple[str, datetime]]] = defaultdict(list)
         for post in posts:
             if post.submolt and post.author_id:
@@ -126,37 +118,29 @@ class NetworkBuilder:
                     (post.author_id, post.created_at or datetime.now())
                 )
         
-        # Build edges: agents who post in the same submolt are connected
-        # For directed: earlier poster -> later poster (temporal influence)
         edge_counts: dict[tuple[str, str], int] = defaultdict(int)
         
         for submolt, agent_posts in submolt_agents.items():
-            # Sort by time
             agent_posts.sort(key=lambda x: x[1])
             
-            # Get unique agents in this submolt
             agents_in_submolt = list(dict.fromkeys([a for a, _ in agent_posts]))
             
             if len(agents_in_submolt) < 2:
                 continue
             
-            # Create edges between agents in same submolt
             for i, agent1 in enumerate(agents_in_submolt):
                 for agent2 in agents_in_submolt[i+1:]:
                     if agent1 != agent2:
                         if directed:
-                            # Earlier poster influences later poster
                             edge_counts[(agent1, agent2)] += 1
                         else:
                             edge_counts[(agent1, agent2)] += 1
         
-        # Build graph
         if directed:
             G = nx.DiGraph()
         else:
             G = nx.Graph()
         
-        # Add all agents as nodes first
         all_agents = set()
         for post in posts:
             if post.author_id:
@@ -165,7 +149,6 @@ class NetworkBuilder:
         for agent in all_agents:
             G.add_node(agent)
         
-        # Add edges with weights
         for (source, target), weight in edge_counts.items():
             if directed:
                 G.add_edge(source, target, weight=weight)
@@ -200,14 +183,11 @@ class NetworkBuilder:
         """
         df = interactions_df.copy()
         
-        # Apply temporal filter
         if until_time:
             df = df[df['timestamp'] <= until_time]
         
-        # Count interactions between agent pairs
         edge_counts = df.groupby(['source_agent_id', 'target_agent_id']).size()
         
-        # Build graph
         if directed:
             G = nx.DiGraph()
         else:
@@ -261,13 +241,11 @@ class NetworkBuilder:
         Returns:
             List of (timestamp, network) tuples.
         """
-        # Get all interactions
         interactions = self.storage.get_interactions()
         
         if not interactions:
             return []
         
-        # Determine time bounds
         timestamps = [i.timestamp for i in interactions if i.timestamp]
         if not timestamps:
             return []
@@ -277,7 +255,6 @@ class NetworkBuilder:
         if end_time is None:
             end_time = max(timestamps)
         
-        # Generate snapshots
         snapshots = []
         current_time = start_time
         
@@ -299,7 +276,6 @@ class NetworkBuilder:
         
         B = nx.Graph()
         
-        # Add nodes with bipartite attribute
         agents = set()
         submolts = set()
         
@@ -313,11 +289,10 @@ class NetworkBuilder:
             
             B.add_edge(agent_id, submolt_name, weight=post_count)
         
-        # Set bipartite attribute
         for agent in agents:
-            B.nodes[agent]['bipartite'] = 0  # Agents
+            B.nodes[agent]['bipartite'] = 0
         for submolt in submolts:
-            B.nodes[submolt]['bipartite'] = 1  # Submolts
+            B.nodes[submolt]['bipartite'] = 1
         
         logger.info(
             f"Built bipartite network: {len(agents)} agents, "
@@ -340,10 +315,8 @@ class NetworkBuilder:
         Returns:
             Agent-agent similarity network.
         """
-        # Get agent nodes (bipartite=0)
         agents = [n for n, d in bipartite.nodes(data=True) if d.get('bipartite') == 0]
         
-        # Build similarity network
         G = nx.Graph()
         
         for i, agent1 in enumerate(agents):
@@ -352,7 +325,6 @@ class NetworkBuilder:
             for agent2 in agents[i+1:]:
                 neighbors2 = set(bipartite.neighbors(agent2))
                 
-                # Compute similarity
                 intersection = neighbors1 & neighbors2
                 
                 if not intersection:
@@ -365,7 +337,6 @@ class NetworkBuilder:
                     min_size = min(len(neighbors1), len(neighbors2))
                     similarity = len(intersection) / min_size if min_size else 0
                 elif weight_func == 'weighted':
-                    # Sum of minimum weights for shared submolts
                     similarity = sum(
                         min(
                             bipartite[agent1][s].get('weight', 1),
@@ -408,7 +379,6 @@ class NetworkBuilder:
             else:
                 stats['avg_degree'] = sum(d for _, d in G.degree()) / G.number_of_nodes()
             
-            # Connected components
             if isinstance(G, nx.DiGraph):
                 stats['num_weakly_connected'] = nx.number_weakly_connected_components(G)
                 stats['num_strongly_connected'] = nx.number_strongly_connected_components(G)

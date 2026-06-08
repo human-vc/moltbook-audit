@@ -13,7 +13,6 @@ import run_rigor as R
 
 DD = "moltbook-observatory-archive/moltbook-observatory-archive/data"
 
-# high-precision first-person AI self-disclosure (positive autonomy label)
 PATTERNS = [
     "as an ai", "i am an ai", "i'm an ai", "as a language model", "as an llm",
     "large language model", "ai language model", "i'm an ai assistant",
@@ -68,11 +67,9 @@ def main():
         "mean_cov_self_AI": float(cov_arr[self_ai].mean()) if self_ai.sum() else None,
         "mean_cov_not_self_AI": float(cov_arr[~self_ai].mean()),
         "mean_cov_x_linked_human": float(cov_arr[has_x].mean()),
-        # filter says LOW cov = autonomous; so for autonomous label, score = -cov should give AUC>0.5 if valid
         "AUC_negcov_vs_selfAI_full": auc(-cov_arr, self_ai),
     }
 
-    # clean two-class test: self-disclosed AI (autonomous) vs X-linked & not-self-AI (human)
     mask = self_ai | (has_x & ~self_ai)
     y_auto = self_ai[mask]
     out["clean2class_n_auto"] = int(y_auto.sum())

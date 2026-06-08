@@ -55,7 +55,6 @@ class MoltBookDatasetLoader:
                 "git clone https://huggingface.co/datasets/SimulaMet/moltbook-observatory-archive"
             )
         
-        # Verify data directory exists
         self.data_dir = self.dataset_path / "data"
         if not self.data_dir.exists():
             raise FileNotFoundError(
@@ -115,7 +114,6 @@ class MoltBookDatasetLoader:
         if isinstance(value, datetime):
             return value
         
-        # Handle pandas Timestamp
         if isinstance(value, pd.Timestamp):
             return value.to_pydatetime().replace(tzinfo=None)
         
@@ -123,7 +121,6 @@ class MoltBookDatasetLoader:
             return datetime.fromtimestamp(value)
         
         if isinstance(value, str):
-            # Try ISO format variants
             for fmt in [
                 "%Y-%m-%dT%H:%M:%S.%f%z",
                 "%Y-%m-%dT%H:%M:%S%z",
@@ -141,7 +138,6 @@ class MoltBookDatasetLoader:
                 except ValueError:
                     continue
             
-            # Try fromisoformat
             try:
                 dt = datetime.fromisoformat(value.replace('Z', '+00:00'))
                 if dt.tzinfo is not None:
@@ -163,14 +159,13 @@ class MoltBookDatasetLoader:
             Agent object or None if parsing fails.
         """
         try:
-            # Map observatory schema to our Agent model
             return Agent(
                 agent_id=str(row['id']),
                 username=str(row.get('name', 'unknown')),
                 join_date=self._parse_datetime(row.get('created_at')),
                 bio=str(row.get('description', '')),
-                post_count=0,  # Will be computed from posts
-                comment_count=0,  # Will be computed from comments
+                post_count=0,
+                comment_count=0,
                 karma=int(row.get('karma', 0)),
                 first_seen=self._parse_datetime(row.get('first_seen_at')),
                 last_seen=self._parse_datetime(row.get('last_seen_at')),
@@ -189,7 +184,6 @@ class MoltBookDatasetLoader:
             Post object or None if parsing fails.
         """
         try:
-            # Map observatory schema to our Post model
             return Post(
                 post_id=str(row['id']),
                 author_id=str(row['agent_id']),
@@ -197,7 +191,7 @@ class MoltBookDatasetLoader:
                 body=str(row.get('content', '')),
                 submolt=str(row.get('submolt', '')),
                 upvotes=int(row.get('score', 0)),
-                downvotes=0,  # Not tracked in observatory
+                downvotes=0,
                 created_at=self._parse_datetime(row.get('created_at')),
                 scraped_at=self._parse_datetime(row.get('fetched_at')),
             )
@@ -215,7 +209,6 @@ class MoltBookDatasetLoader:
             Comment object or None if parsing fails.
         """
         try:
-            # Map observatory schema to our Comment model
             return Comment(
                 comment_id=str(row['id']),
                 post_id=str(row['post_id']),
@@ -223,7 +216,7 @@ class MoltBookDatasetLoader:
                 parent_comment_id=str(row['parent_id']) if pd.notna(row.get('parent_id')) else None,
                 body=str(row.get('content', '')),
                 upvotes=int(row.get('score', 0)),
-                downvotes=0,  # Not tracked in observatory
+                downvotes=0,
                 created_at=self._parse_datetime(row.get('created_at')),
                 scraped_at=self._parse_datetime(row.get('fetched_at')),
             )
@@ -241,7 +234,6 @@ class MoltBookDatasetLoader:
             Submolt object or None if parsing fails.
         """
         try:
-            # Map observatory schema to our Submolt model
             return Submolt(
                 name=str(row['name']),
                 description=str(row.get('description', '')),
@@ -412,16 +404,13 @@ class MoltBookDatasetLoader:
             "start_time": start_time.isoformat(),
         }
         
-        # Load in order: submolts, agents, posts, comments
         results["submolts"] = self.load_submolts()
         results["agents"] = self.load_agents(max_agents)
         results["posts"] = self.load_posts(max_posts)
         results["comments"] = self.load_comments(max_comments)
         
-        # Extract interactions from comment relationships
         results["interactions"] = self._extract_interactions()
         
-        # Save to disk
         self.storage.save()
         
         end_time = datetime.now()
@@ -453,7 +442,6 @@ class MoltBookDatasetLoader:
             if not source_id:
                 continue
             
-            # Type 1: Reply to another comment
             if comment.parent_comment_id:
                 parent_author = self.storage.get_comment_author(comment.parent_comment_id)
                 if parent_author and parent_author != source_id:
@@ -468,7 +456,6 @@ class MoltBookDatasetLoader:
                     self.storage.insert_interaction(interaction)
                     count += 1
             
-            # Type 2: Comment on a post (only if not a reply to another comment)
             else:
                 post_author = self.storage.get_post_author(comment.post_id)
                 if post_author and post_author != source_id:

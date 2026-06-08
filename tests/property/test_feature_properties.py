@@ -43,20 +43,16 @@ class TestShannonEntropyCalculation:
     @settings(max_examples=100, suppress_health_check=[HealthCheck.too_slow])
     def test_entropy_matches_formula(self, counts: list[int]):
         """Computed entropy should match the Shannon entropy formula."""
-        # Convert counts to probability distribution
         total = sum(counts)
         distribution = np.array([c / total for c in counts])
         
-        # Compute expected entropy manually
         expected = 0.0
         for p in distribution:
             if p > 0:
                 expected -= p * math.log2(p)
         
-        # Compute using our function
         actual = compute_shannon_entropy(distribution)
         
-        # Should match within floating-point tolerance
         assert abs(actual - expected) < 1e-10, (
             f"Expected entropy {expected}, got {actual}"
         )
@@ -139,7 +135,6 @@ class TestNormalizedEntropy:
     
     def test_concentrated_normalized_to_zero(self):
         """Concentrated distribution should have normalized entropy of 0."""
-        # All probability on one category
         distribution = np.array([1.0, 0.0, 0.0])
         entropy = compute_shannon_entropy(distribution)
         
@@ -186,16 +181,13 @@ class TestFeatureStandardizationInvariants:
     @settings(max_examples=50, suppress_health_check=[HealthCheck.too_slow])
     def test_standardized_mean_near_zero(self, n_samples: int, n_features: int):
         """Standardized features should have mean near zero."""
-        # Generate random feature data
         np.random.seed(42)
-        data = np.random.randn(n_samples, n_features) * 10 + 5  # Non-zero mean
+        data = np.random.randn(n_samples, n_features) * 10 + 5
         
-        # Create DataFrame
         columns = [f'feature_{i}' for i in range(n_features)]
         df = pd.DataFrame(data, columns=columns)
         df['agent_id'] = [f'agent_{i}' for i in range(n_samples)]
         
-        # Mock database and network
         db = MagicMock()
         network = MagicMock()
         config = Config()
@@ -203,7 +195,6 @@ class TestFeatureStandardizationInvariants:
         extractor = FeatureExtractor(db, network, config)
         df_std = extractor.standardize_features(df)
         
-        # Check mean of each feature column
         for col in columns:
             mean = df_std[col].mean()
             assert abs(mean) < 1e-10, (
@@ -217,19 +208,15 @@ class TestFeatureStandardizationInvariants:
     @settings(max_examples=50, suppress_health_check=[HealthCheck.too_slow])
     def test_standardized_std_near_one(self, n_samples: int, n_features: int):
         """Standardized features should have std near one."""
-        # Generate random feature data with varying scales
         np.random.seed(42)
         data = np.random.randn(n_samples, n_features)
-        # Scale each column differently
         for i in range(n_features):
             data[:, i] = data[:, i] * (i + 1) * 10
         
-        # Create DataFrame
         columns = [f'feature_{i}' for i in range(n_features)]
         df = pd.DataFrame(data, columns=columns)
         df['agent_id'] = [f'agent_{i}' for i in range(n_samples)]
         
-        # Mock database and network
         db = MagicMock()
         network = MagicMock()
         config = Config()
@@ -237,21 +224,18 @@ class TestFeatureStandardizationInvariants:
         extractor = FeatureExtractor(db, network, config)
         df_std = extractor.standardize_features(df)
         
-        # Check std of each feature column
         for col in columns:
             std = df_std[col].std()
-            # Use ddof=0 for population std to match sklearn
             assert abs(std - 1.0) < 0.1, (
                 f"Standardized std of {col} should be ~1, got {std}"
             )
     
     def test_constant_column_handled(self):
         """Constant columns should be handled gracefully."""
-        # Create DataFrame with a constant column
         df = pd.DataFrame({
             'agent_id': ['a', 'b', 'c'],
             'feature_1': [1.0, 2.0, 3.0],
-            'constant': [5.0, 5.0, 5.0],  # Constant column
+            'constant': [5.0, 5.0, 5.0],
         })
         
         db = MagicMock()
@@ -260,10 +244,8 @@ class TestFeatureStandardizationInvariants:
         
         extractor = FeatureExtractor(db, network, config)
         
-        # Should not raise an error
         df_std = extractor.standardize_features(df)
         
-        # Non-constant column should be standardized
         assert abs(df_std['feature_1'].mean()) < 1e-10
     
     def test_agent_id_excluded(self):
@@ -280,7 +262,6 @@ class TestFeatureStandardizationInvariants:
         extractor = FeatureExtractor(db, network, config)
         df_std = extractor.standardize_features(df)
         
-        # Agent IDs should be unchanged
         assert list(df_std['agent_id']) == ['agent_1', 'agent_2', 'agent_3']
 
 
@@ -321,7 +302,6 @@ class TestFeatureExtractorEdgeCases:
         """Agent not in network should have zero centrality metrics."""
         db = MagicMock()
         
-        # Create a real network without the agent
         import networkx as nx
         network = nx.DiGraph()
         network.add_edge('other_1', 'other_2', weight=1)

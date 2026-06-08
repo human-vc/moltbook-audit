@@ -43,7 +43,6 @@ class TestCollaborativeEventFiltering:
         db = MagicMock()
         config = Config()
         
-        # Create a post with enough participants
         post = Post(
             post_id='post_1',
             author_id='agent_1',
@@ -91,7 +90,6 @@ class TestCollaborativeEventFiltering:
             created_at=datetime(2026, 1, 1, 10, 0),
         )
         
-        # Only 3 comments - should not qualify
         comments = [
             Comment(
                 comment_id=f'comment_{i}',
@@ -109,7 +107,6 @@ class TestCollaborativeEventFiltering:
         identifier = CollaborationIdentifier(db, config)
         events = identifier.identify_collaborative_events(min_comments=5)
         
-        # Should find no events with only 3 comments
         assert len(events) == 0
 
 
@@ -162,7 +159,6 @@ class TestBonferroniCorrection:
     @settings(max_examples=30, suppress_health_check=[HealthCheck.filter_too_much])
     def test_bonferroni_multiplies_by_n_tests(self, n_tests: int):
         """Bonferroni correction should multiply p-values by number of tests."""
-        # Generate p-values of the correct length
         p_values = [np.random.uniform(0.001, 0.999) for _ in range(n_tests)]
         
         config = Config()
@@ -181,7 +177,7 @@ class TestBonferroniCorrection:
         config = Config()
         framework = StatisticalFramework(config)
         
-        p_values = [0.5, 0.6, 0.7]  # Will exceed 1.0 when multiplied by 3
+        p_values = [0.5, 0.6, 0.7]
         corrected = framework.apply_bonferroni_correction(p_values)
         
         for p in corrected:
@@ -197,7 +193,6 @@ class TestConfigurationModelDegreePreservation:
     
     def test_degree_sequence_preserved(self):
         """Configuration model should preserve degree sequence."""
-        # Create original network
         G = nx.DiGraph()
         G.add_edges_from([
             ('a', 'b'), ('a', 'c'), ('b', 'c'), ('c', 'd'),
@@ -229,7 +224,6 @@ class TestDeidentifiedExportValidation:
     
     def test_validation_accepts_hashed_ids(self, tmp_path):
         """Validation should accept properly hashed IDs."""
-        # Create test CSV with hashed IDs
         df = pd.DataFrame({
             'agent_id': ['a1b2c3d4e5f67890', 'f0e1d2c3b4a59876'],
             'post_count': [10, 20],

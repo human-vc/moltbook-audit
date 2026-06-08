@@ -39,7 +39,6 @@ def slope(dv):
     }
 
 
-# direct length-bias check: does judge track raw length more than humans do?
 len_h = stats.spearmanr(d["overall_human"], d["charlen"])
 len_j = stats.spearmanr(d["overall_judge"], d["charlen"])
 contrib_len = stats.spearmanr(d["n_contributors"], d["charlen"])
