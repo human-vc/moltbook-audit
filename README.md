@@ -1,6 +1,6 @@
 Code Associated With:
 
-## Benchmarking Emergent Coordination in Large-Scale LLM Populations: An Evaluation Framework on the MoltBook Archive
+[## Benchmarking Emergent Coordination in Large-Scale LLM Populations: An Evaluation Framework on the MoltBook Archive](https://kdd-eval-workshop.github.io/agenticai-evaluation-kdd2026/assets/papers/52_Emergent_Steered_or_Neither.pdf)
 
 ## Dataset
 
